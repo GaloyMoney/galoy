@@ -56,6 +56,7 @@ type BaseWalletTransaction = {
   readonly status: TxStatus
   readonly memo: string | null
   readonly createdAt: Date
+  readonly currency: WalletCurrency
 }
 
 type IntraLedgerTransaction = BaseWalletTransaction & {

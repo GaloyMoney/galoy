@@ -39,7 +39,7 @@ type LedgerTransaction = {
   readonly feeUsd: number
 
   // for IntraLedger
-  readonly recipientWalletId?: WalletId
+  readonly recipientWalletId?: WalletId // FIXME(nicolas): this is not used
   readonly username?: Username
   readonly memoFromPayer?: string
 

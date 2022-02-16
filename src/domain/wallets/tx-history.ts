@@ -1,6 +1,12 @@
-import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
+import {
+  MEMO_SHARING_SATS_THRESHOLD,
+  MEMO_SHARING_CENTS_THRESHOLD,
+  onboardingEarn,
+} from "@config"
 import { toSats } from "@domain/bitcoin"
 import { ExtendedLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
+
+import { WalletCurrency } from "./primitives"
 
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
@@ -13,9 +19,13 @@ const filterPendingIncoming = (
 ): WalletOnChainTransaction[] => {
   const walletTransactions: WalletOnChainTransaction[] = []
   pendingTransactions.forEach(({ rawTx, createdAt }) => {
+    // TODO: manage the case where walletCurrency associated
+    // with WalletId is not WalletCurrency.Btc
+
     rawTx.outs.forEach(({ sats, address }) => {
       if (address && addresses.includes(address)) {
         walletTransactions.push({
+          currency: WalletCurrency.Btc,
           id: rawTx.txHash,
           walletId,
           settlementAmount: sats,
@@ -61,6 +71,7 @@ export const fromLedger = (
       address,
       pendingConfirmation,
       timestamp,
+      currency,
     }) => {
       const settlementAmount = toSats(credit - debit)
 
@@ -68,6 +79,7 @@ export const fromLedger = (
         memoFromPayer,
         lnMemo,
         credit,
+        currency,
       })
 
       const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
@@ -81,6 +93,7 @@ export const fromLedger = (
         status,
         memo,
         createdAt: timestamp,
+        currency,
       }
 
       let txType: ExtendedLedgerTransactionType = type
@@ -211,12 +224,18 @@ export const fromLedger = (
 
 const shouldDisplayMemo = ({
   memo,
+  currency,
   credit,
 }: {
   memo: string | undefined
-  credit: number
+  currency: WalletCurrency
+  credit: CurrencyBaseAmount
 }) => {
-  return isAuthorizedMemo(memo) || credit === 0 || credit >= MEMO_SHARING_SATS_THRESHOLD
+  if (isAuthorizedMemo(memo)) return true
+  if (credit === 0) return true
+
+  if (currency === WalletCurrency.Btc) return credit >= MEMO_SHARING_SATS_THRESHOLD
+  else return credit >= MEMO_SHARING_CENTS_THRESHOLD
 }
 
 const isAuthorizedMemo = (memo: string | undefined): boolean =>
@@ -226,12 +245,14 @@ export const translateMemo = ({
   memoFromPayer,
   lnMemo,
   credit,
+  currency,
 }: {
   memoFromPayer?: string
   lnMemo?: string
-  credit: number
+  credit: CurrencyBaseAmount
+  currency: WalletCurrency
 }): string | null => {
-  if (shouldDisplayMemo({ memo: memoFromPayer, credit })) {
+  if (shouldDisplayMemo({ memo: memoFromPayer, credit, currency })) {
     if (memoFromPayer) {
       return memoFromPayer
     }

@@ -26,6 +26,7 @@ try {
 export const yamlConfig = merge(defaultConfig, customConfig)
 
 export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThreshold
+export const MEMO_SHARING_CENTS_THRESHOLD = yamlConfig.limits.memoSharingCentsThreshold
 
 export const ONCHAIN_MIN_CONFIRMATIONS = yamlConfig.onChainWallet.minConfirmations
 // how many block are we looking back for getChainTransactions
