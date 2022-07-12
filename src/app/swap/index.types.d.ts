@@ -1,0 +1,3 @@
+type SwapOutArgs = {
+  amount: Satoshis
+}

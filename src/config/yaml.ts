@@ -17,10 +17,13 @@ import { toDays, toSeconds } from "@domain/primitives"
 
 import { checkedToPubkey } from "@domain/bitcoin/lightning"
 
+import { SwapConfig } from "@domain/swap/index.types"
+
 import { configSchema } from "./schema"
 import { ConfigError } from "./error"
 
 import { merge } from "./utils"
+import { RateLimitInput, YamlSchema } from "./schema.types"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 const defaultConfig = yaml.load(defaultContent)
@@ -296,3 +299,14 @@ export const getRewardsConfig = () => {
 export const getAccountsConfig = (config = yamlConfig): AccountsConfig => ({
   initialStatus: config.accounts.initialStatus as AccountStatus,
 })
+
+export const getSwapConfig = (): SwapConfig => {
+  const config = yamlConfig.swap
+  return {
+    minOutboundLiquidityBalance: toSats(config.minOutboundLiquidityBalance),
+    swapOutAmount: toSats(config.swapOutAmount),
+    loopRestEndpoint: config.loopRestEndpoint,
+    loopRpcEndpoint: config.loopRpcEndpoint,
+    swapProviders: config.swapProviders,
+  }
+}

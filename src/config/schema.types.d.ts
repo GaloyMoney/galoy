@@ -1,3 +1,5 @@
+import { SwapProvider } from "@domain/swap/index.types"
+
 type BuildNumberInput = {
   minBuildNumber: number
   lastBuildNumber: number
@@ -114,6 +116,13 @@ type YamlSchema = {
     scanDepth: number
     scanDepthOutgoing: number
     scanDepthChannelUpdate: number
+  }
+  swap: {
+    minOutboundLiquidityBalance: number
+    loopRestEndpoint: string
+    loopRpcEndpoint: string
+    swapOutAmount: number
+    swapProviders: Array<SwapProvider>
   }
   apollo: {
     playground: boolean

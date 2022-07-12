@@ -304,6 +304,20 @@ export const configSchema = {
       ],
       additionalProperties: false,
     },
+    swap: {
+      type: "object",
+      properties: {
+        minOutboundLiquidityBalance: { type: "integer" },
+        loopRestEndpoint: { type: "string" },
+        loopRpcEndpoint: { type: "string" },
+        swapOutAmount: { type: "integer" },
+        swapProviders: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+        },
+      },
+    },
     apollo: {
       type: "object",
       properties: {

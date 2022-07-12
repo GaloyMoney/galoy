@@ -1,1 +1,4 @@
 *.macaroon
+lnd-outside-1
+loop-tls.cert
+loop-tls.key

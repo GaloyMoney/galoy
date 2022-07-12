@@ -8,6 +8,7 @@ import * as PricesMod from "./prices"
 import * as UsersMod from "./users"
 import * as WalletsMod from "./wallets"
 import * as PaymentsMod from "./payments"
+import * as SwapMod from "./swap"
 
 const allFunctions = {
   Accounts: { ...AccountsMod },
@@ -18,6 +19,7 @@ const allFunctions = {
   Users: { ...UsersMod },
   Wallets: { ...WalletsMod },
   Payments: { ...PaymentsMod },
+  Swap: { ...SwapMod },
 } as const
 
 let subModule: keyof typeof allFunctions
@@ -39,4 +41,5 @@ export const {
   Users,
   Wallets,
   Payments,
+  Swap,
 } = allFunctions

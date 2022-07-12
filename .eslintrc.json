@@ -4,7 +4,7 @@
     "es6": true,
     "node": true
   },
-  "ignorePatterns": ["/*.js", "lib", "coverage"],
+  "ignorePatterns": ["/*.js", "lib", "coverage", "generated"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "tsconfig.json",

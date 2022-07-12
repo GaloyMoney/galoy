@@ -167,6 +167,13 @@ onChainWallet:
   scanDepthOutgoing: 2
   scanDepthChannelUpdate: 8
 
+swap:
+  minOutboundLiquidityBalance: 30000000
+  loopRestEndpoint: "https://localhost:8081"
+  loopRpcEndpoint: "localhost:11010"
+  swapOutAmount: 500000 # 25000000
+  swapProviders: ["LOOP"]
+
 # TODO
 # carrierRegexFilter: ""
 

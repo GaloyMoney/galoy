@@ -26,6 +26,8 @@ const main = async () => {
     if (result instanceof Error) throw result
   }
 
+  // @todo call SwapOutChecker code here
+
   const updatePendingLightningInvoices = () => Wallets.updatePendingInvoices(logger)
 
   const updatePendingLightningPayments = () => Payments.updatePendingPayments(logger)
