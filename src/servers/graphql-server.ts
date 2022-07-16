@@ -20,7 +20,7 @@ import {
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import express from "express"
 import { expressjwt } from "express-jwt"
-import { GraphQLError } from "graphql"
+import { execute, GraphQLError, subscribe } from "graphql"
 import { rule } from "graphql-shield"
 import helmet from "helmet"
 import * as jwt from "jsonwebtoken"
@@ -33,6 +33,12 @@ import { useServer } from "graphql-ws/lib/use/ws"
 import { mapError } from "@graphql/error-map"
 
 import { parseIps } from "@domain/users-ips"
+
+import {
+  ExecuteFunction,
+  SubscribeFunction,
+  SubscriptionServer,
+} from "subscriptions-transport-ws"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -56,6 +62,8 @@ export const isEditor = rule({ cache: "contextual" })(
 )
 
 const GRAPHQL_PATH = "/graphql"
+const GRAPHQL_PATH_SUBSCRIPTION_LEGACY = "/graphql"
+const GRAPHQL_PATH_SUBSCRIPTION_NEW = "/graphqlws"
 
 const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
 
@@ -193,7 +201,7 @@ export const startApolloServer = async ({
   if (startSubscriptionServer) {
     const wsServer = new WebSocketServer({
       server: httpServer,
-      path: GRAPHQL_PATH,
+      path: GRAPHQL_PATH_SUBSCRIPTION_NEW,
     })
 
     const serverCleanup = useServer(
@@ -329,6 +337,51 @@ export const startApolloServer = async ({
 
   return new Promise((resolve, reject) => {
     httpServer.listen({ port }, () => {
+      // TODO: Delete after migration
+      // legacy subscription server
+      if (startSubscriptionServer) {
+        const apolloSubscriptionServer = new SubscriptionServer(
+          {
+            execute: execute as unknown as ExecuteFunction,
+            subscribe: subscribe as unknown as SubscribeFunction,
+            schema,
+            async onConnect(connectionParams, webSocket, connectionContext) {
+              const { request } = connectionContext
+
+              let tokenPayload: string | jwt.JwtPayload | null = null
+              const authz =
+                connectionParams.authorization || connectionParams.Authorization
+              if (authz) {
+                const rawToken = authz.slice(7)
+                tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
+                  algorithms: jwtAlgorithms,
+                })
+
+                if (typeof tokenPayload === "string") {
+                  throw new Error("tokenPayload should be an object")
+                }
+              }
+
+              return sessionContext({
+                tokenPayload,
+                ip: request?.socket?.remoteAddress,
+
+                // TODO: Resolve what's needed here
+                body: null,
+              })
+            },
+          },
+          {
+            server: httpServer,
+            path: GRAPHQL_PATH_SUBSCRIPTION_LEGACY,
+          },
+        )
+        ;["SIGINT", "SIGTERM"].forEach((signal) => {
+          process.on(signal, () => apolloSubscriptionServer.close())
+        })
+      }
+      // END TODO
+
       console.log(
         `🚀 "${type}" server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
       )
