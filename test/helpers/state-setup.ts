@@ -6,6 +6,8 @@ import { adminUsers } from "@domain/admin-users"
 
 import { baseLogger } from "@services/logger"
 
+import { sleep } from "@utils"
+
 import {
   fundLnd,
   getChainBalance,
@@ -161,6 +163,8 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
     )
   }
 
+  await sleep(1000)
+
   // Fund external lnd
   if (stateConfig.lndFunding.length > 0) {
     for (const lndInstance of stateConfig.lndFunding) {
@@ -170,6 +174,8 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
     await mineBlockAndSyncAll()
     baseLogger.info("LND's have been funded.")
   }
+
+  await sleep(1000)
 
   // Open ln channels
   if (stateConfig.channelOpens.length > 0) {
@@ -181,5 +187,6 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
     baseLogger.info("Channels have been opened.")
   }
 
+  await sleep(1000)
   await checkIsBalanced()
 }
