@@ -219,6 +219,24 @@ export const configSchema = {
       type: "object",
       properties: {
         initialStatus: { type: "string", enum: Object.values(AccountStatus) },
+        information: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              type: {
+                type: "string",
+                enum: ["string", "integer", "float", "boolean"],
+                default: "string",
+              },
+              required: { type: "boolean", default: false },
+            },
+            required: ["name"],
+            additionalProperties: false,
+          },
+          uniqueItems: true,
+        },
       },
       required: ["initialStatus"],
       additionalProperties: false,

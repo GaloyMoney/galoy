@@ -15,6 +15,7 @@ import Wallet from "../abstract/wallet"
 import WalletId from "../scalar/wallet-id"
 
 import { TransactionConnection } from "./transaction"
+import AccountInformation from "./account-information"
 
 const ConsumerAccount = GT.Object({
   name: "ConsumerAccount",
@@ -90,6 +91,15 @@ const ConsumerAccount = GT.Object({
         }
 
         return connectionFromArray<WalletTransaction>(transactions, args)
+      },
+    },
+
+    information: {
+      description: "Additional account information",
+      type: AccountInformation,
+      resolve: async (/*source: Account*/) => {
+        // return Accounts.getInformation(source.id)
+        return null
       },
     },
   }),

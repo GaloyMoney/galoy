@@ -124,6 +124,19 @@ rateLimits:
 
 accounts:
   initialStatus: active
+  information:
+    - name: "firstName"
+      type: "string"
+      required: true
+    - name: "lastName"
+      type: "string"
+      required: false
+    - name: "otherField"
+      type: "integer"
+      required: false
+    - name: "otherField2"
+      type: "boolean"
+      required: false
 
 accountLimits:
   withdrawal:

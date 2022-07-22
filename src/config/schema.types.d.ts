@@ -16,6 +16,12 @@ type AccountLimitsConfig = {
   }
 }
 
+type DynamicField = {
+  name: string
+  type?: "string" | "integer" | "float" | "boolean"
+  required?: boolean
+}
+
 type YamlSchema = {
   PROXY_CHECK_APIKEY: string
   name: string
@@ -78,6 +84,7 @@ type YamlSchema = {
   }
   accounts: {
     initialStatus: string
+    information: DynamicField[]
   }
   accountLimits: {
     withdrawal: AccountLimitsConfig

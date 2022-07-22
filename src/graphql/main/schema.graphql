@@ -2,6 +2,7 @@ interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+  information: AccountInformation
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -25,6 +26,14 @@ interface Account {
     walletIds: [WalletId]
   ): TransactionConnection
   wallets: [Wallet!]!
+}
+
+type AccountInformation {
+  firstName: String!
+  lastName: String
+  otherField: Int
+  otherField2: Boolean
+  transactionsCallback: String
 }
 
 input AccountUpdateDefaultWalletIdInput {
@@ -127,6 +136,11 @@ type ConsumerAccount implements Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+
+  """
+  Additional account information
+  """
+  information: AccountInformation
 
   """
   A list of all transactions associated with walletIds optionally passed.
