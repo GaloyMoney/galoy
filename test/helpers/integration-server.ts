@@ -10,6 +10,7 @@ export const startServer = async (command: string): Promise<PID> => {
   return new Promise<PID>((resolve) => {
     const serverProcess = childProcess.spawn("make", [command], {
       killSignal: "SIGKILL",
+      env: { ...process.env, NEW_SERVER: "true" }, // TODO: remove NEW_SERVER after WS migration
     })
     const serverPid = serverProcess.pid as PID
     serverProcess.stdout.on("data", (data) => {
