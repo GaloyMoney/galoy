@@ -20,12 +20,11 @@ import {
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import express from "express"
 import { expressjwt } from "express-jwt"
-import { GraphQLError } from "graphql"
+import { GraphQLError, GraphQLSchema } from "graphql"
 import helmet from "helmet"
 import * as jwt from "jsonwebtoken"
 import pino from "pino"
 import PinoHttp from "pino-http"
-// import Extra, { WebSocketServer } from "ws"
 import { WebSocketServer } from "ws"
 import { useServer } from "graphql-ws/lib/use/ws"
 

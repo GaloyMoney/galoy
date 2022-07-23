@@ -20,7 +20,7 @@ import {
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import express from "express"
 import { expressjwt } from "express-jwt"
-import { execute, GraphQLError, subscribe } from "graphql"
+import { execute, GraphQLError, GraphQLSchema, subscribe } from "graphql"
 import helmet from "helmet"
 import * as jwt from "jsonwebtoken"
 import pino from "pino"
@@ -58,7 +58,7 @@ const sessionContext = ({
 }: {
   tokenPayload: jwt.JwtPayload | null
   ip: IpAddress | undefined
-  body
+  body: unknown
 }): Promise<GraphQLContext> => {
   const userId = tokenPayload?.uid ?? null
 
@@ -108,6 +108,13 @@ export const startApolloServer = async ({
   port,
   startSubscriptionServer = false,
   enableApolloUsageReporting = false,
+  type,
+}: {
+  schema: GraphQLSchema
+  port: string | number
+  startSubscriptionServer?: boolean
+  enableApolloUsageReporting?: boolean
+  type: string
 }): Promise<Record<string, unknown>> => {
   const app = express()
   const httpServer = createServer(app)
@@ -253,12 +260,18 @@ export const startApolloServer = async ({
             execute: execute as unknown as ExecuteFunction,
             subscribe: subscribe as unknown as SubscribeFunction,
             schema,
-            async onConnect(connectionParams, webSocket, connectionContext) {
+            async onConnect(
+              connectionParams: Record<string, unknown>,
+              webSocket: unknown,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              connectionContext: any,
+            ) {
               const { request } = connectionContext
 
               let tokenPayload: string | jwt.JwtPayload | null = null
               const authz =
-                connectionParams.authorization || connectionParams.Authorization
+                String(connectionParams.authorization) ||
+                String(connectionParams.Authorization)
               if (authz) {
                 const rawToken = authz.slice(7)
                 tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
@@ -290,7 +303,7 @@ export const startApolloServer = async ({
       }
 
       console.log(
-        `🚀 Server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
+        `🚀 "${type}" server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
       )
       resolve({ app, httpServer, apolloServer })
     })
