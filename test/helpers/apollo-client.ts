@@ -14,6 +14,9 @@ import { SubscriptionClient } from "subscriptions-transport-ws"
 import ws from "ws"
 import { GALOY_API_PORT } from "@config"
 
+import { onError } from "@apollo/client/link/error"
+import { baseLogger } from "@services/logger"
+
 export const localIpAddress = "127.0.0.1" as IpAddress
 
 export type ApolloTestClientConfig = {
@@ -63,6 +66,16 @@ export const createApolloClient = (
 
   const wsLink = new WebSocketLink(subscriptionClient)
 
+  const errorLink = onError(({ graphQLErrors, networkError }) => {
+    if (graphQLErrors)
+      graphQLErrors.forEach(({ message, locations, path }) =>
+        baseLogger.error(
+          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+        ),
+      )
+    if (networkError) baseLogger.error(`[Network error]: ${networkError}`)
+  })
+
   const splitLink = split(
     ({ query }) => {
       const definition = getMainDefinition(query)
@@ -72,7 +85,7 @@ export const createApolloClient = (
       )
     },
     wsLink,
-    from([authLink, httpLink]),
+    from([errorLink, authLink, httpLink]),
   )
 
   const apolloClient = new ApolloClient({
