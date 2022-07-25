@@ -67,7 +67,7 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - { get: repo, trigger: true }
+    - { get: repo, passed: [test-integration], trigger: true }
     - { get: pipeline-tasks }
     - { get: bundled-deps, tags: ["galoy-staging"], trigger: true}
   - task: test-e2e
