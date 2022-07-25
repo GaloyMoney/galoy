@@ -219,7 +219,7 @@ export const configSchema = {
       type: "object",
       properties: {
         initialStatus: { type: "string", enum: Object.values(AccountStatus) },
-        information: {
+        customFields: {
           type: "array",
           items: {
             type: "object",
@@ -228,11 +228,10 @@ export const configSchema = {
               type: {
                 type: "string",
                 enum: ["string", "integer", "float", "boolean"],
-                default: "string",
               },
               required: { type: "boolean", default: false },
             },
-            required: ["name"],
+            required: ["name", "type"],
             additionalProperties: false,
           },
           uniqueItems: true,

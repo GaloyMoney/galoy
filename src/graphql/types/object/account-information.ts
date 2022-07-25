@@ -1,18 +1,18 @@
 import { getAccountsConfig } from "@config"
 
 import { GT } from "@graphql/index"
-import { parseDynamicFieldSchema } from "@graphql/helpers"
+import { parseCustomFieldsSchema } from "@graphql/helpers"
 
-const dynamicFieldsSchema = getAccountsConfig().information
+const customFieldsSchema = getAccountsConfig().customFields
 
 const AccountInformation = GT.Object({
   name: "AccountInformation",
   fields: () => {
-    const dynamicFields = parseDynamicFieldSchema(dynamicFieldsSchema)
+    const customFields = parseCustomFieldsSchema(customFieldsSchema)
 
     return {
       transactionsCallback: { type: GT.String },
-      ...dynamicFields,
+      ...customFields,
     }
   },
 })

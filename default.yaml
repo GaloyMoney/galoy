@@ -124,7 +124,7 @@ rateLimits:
 
 accounts:
   initialStatus: active
-  information:
+  customFields:
     - name: "firstName"
       type: "string"
       required: true

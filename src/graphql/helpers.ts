@@ -35,8 +35,8 @@ export const validateIsUsdWalletForMutation = async (
   return true
 }
 
-export const parseDynamicFieldSchema = <TSource, TContext>(
-  fields: DynamicField[],
+export const parseCustomFieldsSchema = <TSource, TContext>(
+  fields: CustomField[],
 ): ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> => {
   const result: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> = {}
   for (const field of fields) {
