@@ -39,25 +39,21 @@ const AccountDataUpdateMutation = GT.Field({
       }
     }
 
+    const result = await Accounts.updateAccountData({
+      accountId: domainAccount.id,
+      transactionsCallback,
+      customFields,
+    })
+
+    if (result instanceof Error) {
+      const appErr = mapError(result)
+      return { errors: [{ message: appErr.message || appErr.name }] }
+    }
+
     return {
       errors: [],
-      account: {},
+      account: result,
     }
-    // const result = await Accounts.updateInformation({
-    //   accountId: domainAccount.id,
-    //   transactionsCallback,
-    //   customFields,
-    // })
-    //
-    // if (result instanceof Error) {
-    //   const appErr = mapError(result)
-    //   return { errors: [{ message: appErr.message || appErr.name }] }
-    // }
-    //
-    // return {
-    //   errors: [],
-    //   account: result,
-    // }
   },
 })
 
