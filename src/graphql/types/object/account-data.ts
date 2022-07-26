@@ -5,8 +5,8 @@ import { parseCustomFieldsSchema } from "@graphql/helpers"
 
 const customFieldsSchema = getAccountsConfig().customFields
 
-const AccountInformation = GT.Object({
-  name: "AccountInformation",
+const AccountData = GT.Object({
+  name: "AccountData",
   fields: () => {
     const customFields = parseCustomFieldsSchema(customFieldsSchema)
 
@@ -17,4 +17,4 @@ const AccountInformation = GT.Object({
   },
 })
 
-export default AccountInformation
+export default AccountData

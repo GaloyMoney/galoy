@@ -25,6 +25,7 @@ import UserLoginMutation from "@graphql/root/mutation/user-login"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserUpdateLanguageMutation from "@graphql/root/mutation/user-update-language"
 import UserUpdateUsernameMutation from "@graphql/root/mutation/user-update-username"
+import AccountDataUpdateMutation from "@graphql/root/mutation/account-data-update"
 import AccountUpdateDefaultWalletIdMutation from "@graphql/root/mutation/account-update-default-wallet-id"
 import UserContactUpdateAliasMutation from "@graphql/root/mutation/user-contact-update-alias"
 import UserQuizQuestionUpdateCompletedMutation from "@graphql/root/mutation/user-quiz-question-update-completed"
@@ -63,8 +64,10 @@ const fields = {
 
   userUpdateLanguage: UserUpdateLanguageMutation,
   userUpdateUsername: UserUpdateUsernameMutation,
-  accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
   userContactUpdateAlias: UserContactUpdateAliasMutation,
+
+  accountDataUpdate: AccountDataUpdateMutation,
+  accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
 
   lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
   lnUsdInvoiceFeeProbe: LnUsdInvoiceFeeProbeMutation,
