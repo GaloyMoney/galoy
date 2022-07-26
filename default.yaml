@@ -128,12 +128,14 @@ accounts:
     - name: "firstName"
       type: "string"
       required: true
+      index: true
     - name: "lastName"
       type: "string"
       required: false
     - name: "otherField"
       type: "integer"
       required: false
+      index: true
     - name: "otherField2"
       type: "boolean"
       required: false

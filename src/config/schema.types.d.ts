@@ -20,6 +20,7 @@ type CustomField = {
   name: string
   type?: "string" | "integer" | "float" | "boolean"
   required?: boolean
+  index?: boolean
 }
 
 type YamlSchema = {

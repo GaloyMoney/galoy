@@ -46,6 +46,12 @@ type AccountStatusHistory = Array<{
   comment?: string
 }>
 
+type AccountData = {
+  readonly id: AccountId
+  transactionsCallback: string
+  customFields: { [k: string]: string | number | boolean }
+}
+
 type Account = {
   readonly id: AccountId
   readonly createdAt: Date
@@ -113,6 +119,11 @@ type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
 }
 
+type FindByCustomFieldArgs = {
+  key: string
+  value: string | number | boolean
+}
+
 interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
@@ -120,6 +131,12 @@ interface IAccountsRepository {
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
   update(account: Account): Promise<Account | RepositoryError>
+}
+
+interface IAccountDataRepository {
+  findById(accountId: AccountId): Promise<AccountData | RepositoryError>
+  listByCustomField(args: FindByCustomFieldArgs): Promise<AccountData[] | RepositoryError>
+  update(data: AccountData): Promise<AccountData | RepositoryError>
 }
 
 type TestAccount = {
