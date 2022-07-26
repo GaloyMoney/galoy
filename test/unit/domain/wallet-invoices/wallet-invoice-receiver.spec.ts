@@ -40,6 +40,7 @@ describe("WalletInvoiceReceiver", () => {
   describe("for btc invoice", () => {
     const btcInvoice: WalletInvoice = {
       paymentHash: "paymentHash" as PaymentHash,
+      secret: "secret" as SecretPreImage,
       selfGenerated: false,
       pubkey: "pubkey" as Pubkey,
       usdAmount: undefined,
@@ -76,6 +77,7 @@ describe("WalletInvoiceReceiver", () => {
     describe("with cents amount", () => {
       const amountUsdInvoice: WalletInvoice = {
         paymentHash: "paymentHash" as PaymentHash,
+        secret: "secret" as SecretPreImage,
         recipientWalletDescriptor: recipientUsdWallet,
         selfGenerated: false,
         pubkey: "pubkey" as Pubkey,
@@ -109,6 +111,7 @@ describe("WalletInvoiceReceiver", () => {
     describe("with no amount", () => {
       const noAmountUsdInvoice: WalletInvoice = {
         paymentHash: "paymentHash" as PaymentHash,
+        secret: "secret" as SecretPreImage,
         recipientWalletDescriptor: recipientUsdWallet,
         selfGenerated: false,
         pubkey: "pubkey" as Pubkey,

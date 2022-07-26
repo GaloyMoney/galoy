@@ -65,6 +65,7 @@ interface WalletInvoiceRecord {
   _id: string
   walletId: string
   cents: number
+  secret: string
   currency: string
   timestamp: Date
   selfGenerated: boolean

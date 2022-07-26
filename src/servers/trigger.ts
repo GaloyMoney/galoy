@@ -181,7 +181,7 @@ export const onchainBlockEventHandler = async (height: number) => {
 export const invoiceUpdateEventHandler = async (invoice: GetInvoiceResult) => {
   logger.info({ invoice }, "invoiceUpdateEventHandler")
 
-  if (!invoice.is_confirmed) {
+  if (!invoice.is_held) {
     return
   }
 
