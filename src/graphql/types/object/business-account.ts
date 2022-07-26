@@ -95,9 +95,8 @@ const BusinessAccount = GT.Object({
     data: {
       description: "Additional account information",
       type: AccountData,
-      resolve: async (/*source: Account*/) => {
-        // return Accounts.getData(source.id)
-        return null
+      resolve: async (source: Account) => {
+        return Accounts.getAccountData(source.id)
       },
     },
   }),
