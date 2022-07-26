@@ -41,7 +41,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     }
   }
 
-  const withInvoice = (invoice: LnInvoice): LPFBWithInvoice<S> | LPFBWithError => {
+  const withInvoice: LightningPaymentFlowBuilder<S>["withInvoice"] = (invoice) => {
     if (invoice.paymentAmount === null) {
       return LPFBWithError(
         new InvalidLightningPaymentFlowBuilderStateError(
@@ -60,13 +60,10 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     })
   }
 
-  const withNoAmountInvoice = ({
+  const withNoAmountInvoice: LightningPaymentFlowBuilder<S>["withNoAmountInvoice"] = ({
     invoice,
     uncheckedAmount,
-  }: {
-    invoice: LnInvoice
-    uncheckedAmount: number
-  }): LPFBWithInvoice<S> | LPFBWithError => {
+  }) => {
     return LPFBWithInvoice({
       ...config,
       ...settlementMethodFromDestination(invoice.destination),
@@ -77,19 +74,18 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     })
   }
 
-  const withoutInvoice = ({
+  const withoutInvoice: LightningPaymentFlowBuilder<S>["withoutInvoice"] = ({
     uncheckedAmount,
     description,
-  }: {
-    uncheckedAmount: number
-    description: string
-  }): LPFBWithInvoice<S> | LPFBWithError => {
+  }) => {
     return LPFBWithInvoice({
       ...config,
       ...settlementMethodFromDestination(undefined),
       paymentInitiationMethod: PaymentInitiationMethod.IntraLedger,
       intraLedgerHash: generateIntraLedgerHash(),
       uncheckedAmount,
+      // @Samer why does this compile? description can be null
+      // descriptionFromInvoice: string
       descriptionFromInvoice: description,
     })
   }

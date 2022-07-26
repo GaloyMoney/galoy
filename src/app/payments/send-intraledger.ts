@@ -61,7 +61,7 @@ export const intraledgerPaymentSendWalletId = async ({
   })
   const builderWithInvoice = paymentBuilder.withoutInvoice({
     uncheckedAmount,
-    description: memo || "",
+    description: memo,
   })
 
   const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
