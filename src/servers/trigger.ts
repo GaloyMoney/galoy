@@ -1,10 +1,12 @@
 import express from "express"
 import {
-  GetInvoiceResult,
   subscribeToBackups,
   subscribeToBlocks,
   subscribeToChannels,
+  subscribeToInvoice,
+  SubscribeToInvoiceInvoiceUpdatedEvent,
   subscribeToInvoices,
+  SubscribeToInvoicesInvoiceUpdatedEvent,
   subscribeToTransactions,
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
@@ -178,16 +180,16 @@ export const onchainBlockEventHandler = async (height: number) => {
   logger.info(`finish block ${height} handler with ${txNumber} transactions`)
 }
 
-export const invoiceUpdateEventHandler = async (invoice: GetInvoiceResult) => {
+export const invoiceUpdateEventHandler = async (
+  invoice: SubscribeToInvoiceInvoiceUpdatedEvent,
+): Promise<boolean | ApplicationError> => {
   logger.info({ invoice }, "invoiceUpdateEventHandler")
-
-  if (!invoice.is_held) {
-    return
-  }
-
-  const paymentHash = invoice.id as PaymentHash
-
-  await Wallets.updatePendingInvoiceByPaymentHash({ paymentHash, logger })
+  return invoice.is_held
+    ? Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: invoice.id as PaymentHash,
+        logger,
+      })
+    : false
 }
 
 export const publishSingleCurrentPrice = async () => {
@@ -232,14 +234,40 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
   })
 }
 
-const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubkey }) => {
-  const subInvoices = subscribeToInvoices({ lnd })
+const listenerHodlInvoice = ({
+  lnd,
+  paymentHash,
+}: {
+  lnd: AuthenticatedLnd
+  paymentHash: PaymentHash
+}) => {
+  const subInvoice = subscribeToInvoice({ lnd, id: paymentHash })
   const invoiceUpdateHandler = wrapAsyncToRunInSpan({
     root: true,
     namespace: "servers.trigger",
     fn: invoiceUpdateEventHandler,
   })
-  subInvoices.on("invoice_updated", invoiceUpdateHandler)
+  subInvoice.on(
+    "invoice_updated",
+    async (invoice: SubscribeToInvoiceInvoiceUpdatedEvent) => {
+      if (invoice.is_confirmed === true) {
+        subInvoice.removeAllListeners()
+      } else {
+        await invoiceUpdateHandler(invoice)
+      }
+    },
+  )
+  subInvoice.on("error", (err) => {
+    baseLogger.info({ err }, "error subChannels")
+    subInvoice.removeAllListeners()
+  })
+}
+
+const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubkey }) => {
+  const subInvoices = subscribeToInvoices({ lnd })
+  subInvoices.on("invoice_updated", (invoice: SubscribeToInvoicesInvoiceUpdatedEvent) =>
+    listenerHodlInvoice({ lnd, paymentHash: invoice.id as PaymentHash }),
+  )
   subInvoices.on("error", (err) => {
     baseLogger.info({ err }, "error subInvoices")
     subInvoices.removeAllListeners()
