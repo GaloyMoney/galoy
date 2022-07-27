@@ -1,5 +1,5 @@
 import { updatePendingPayments } from "@app/payments"
-import { declineHeldInvoices, updateOnChainReceipt } from "@app/wallets"
+import { handleHeldInvoices, updateOnChainReceipt } from "@app/wallets"
 import { baseLogger } from "@services/logger"
 import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 
@@ -12,7 +12,7 @@ const logger = baseLogger.child({ module: "test" })
 
 export const checkIsBalanced = async () => {
   await Promise.all([
-    declineHeldInvoices(logger),
+    handleHeldInvoices(logger),
     updatePendingPayments(logger),
     updateOnChainReceipt({ logger }),
   ])

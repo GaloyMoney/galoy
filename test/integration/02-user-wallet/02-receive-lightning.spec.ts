@@ -2,7 +2,7 @@ import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 
 import { Lightning } from "@app"
 import * as Wallets from "@app/wallets"
-import { declineHeldInvoices } from "@app/wallets"
+import { handleHeldInvoices } from "@app/wallets"
 
 import { toSats } from "@domain/bitcoin"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
@@ -40,6 +40,7 @@ import {
 let walletIdB: WalletId
 let walletIdUsdB: WalletId
 let initBalanceB: Satoshis
+let initBalanceUsdB: UsdCents
 
 jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
@@ -53,6 +54,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   initBalanceB = toSats(await getBalanceHelper(walletIdB))
+  initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 })
 
 afterEach(async () => {
@@ -60,7 +62,7 @@ afterEach(async () => {
 })
 
 describe("UserWallet - Lightning", () => {
-  it("if trigger is missing the invoice, then it should be denied", async () => {
+  it("if trigger is missing the USD invoice, then it should be denied", async () => {
     /*
       the reason we are doing this behavior is to limit the discrepancy between our books,
       and the state of lnd.
@@ -73,8 +75,83 @@ describe("UserWallet - Lightning", () => {
       because of the associated price risk exposure
     */
 
-    const sats = 50000
-    const memo = "myMemo"
+    const cents = 1000
+    const memo = "myUsdMemo"
+
+    const lnInvoice = await Wallets.addInvoiceForSelf({
+      walletId: walletIdUsdB as WalletId,
+      amount: toCents(cents),
+      memo,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
+    const checker = await Lightning.PaymentStatusChecker(invoice)
+    if (checker instanceof Error) throw checker
+
+    const isPaidBeforePay = await checker.invoiceIsPaid()
+    expect(isPaidBeforePay).not.toBeInstanceOf(Error)
+    expect(isPaidBeforePay).toBe(false)
+
+    const paymentHash = getHash(invoice)
+    const pubkey = getPubKey(invoice)
+
+    await Promise.all([
+      (async () => {
+        try {
+          await pay({ lnd: lndOutside1, request: invoice })
+        } catch (err) {
+          expect(err[1]).toBe("PaymentRejectedByDestination")
+        }
+      })(),
+      (async () => {
+        await sleep(500)
+
+        // make sure invoice is held
+
+        const lndService = LndService()
+        if (lndService instanceof Error) throw lndService
+
+        {
+          const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
+          if (lnInvoiceLookup instanceof Error) throw lnInvoiceLookup
+
+          expect(lnInvoiceLookup.isHeld).toBe(true)
+        }
+
+        // handling invoice
+        await handleHeldInvoices(baseLogger)
+
+        const ledger = LedgerService()
+        const ledgerTxs = await ledger.getTransactionsByHash(paymentHash)
+        if (ledgerTxs instanceof Error) throw ledgerTxs
+        expect(ledgerTxs).toStrictEqual([])
+
+        const isPaidAfterPay = await checker.invoiceIsPaid()
+        expect(isPaidAfterPay).not.toBeInstanceOf(Error)
+        expect(isPaidAfterPay).toBe(false)
+
+        const finalBalance = await getBalanceHelper(walletIdUsdB)
+        expect(finalBalance).toBe(initBalanceUsdB)
+
+        const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
+        expect(lnInvoiceLookup).toBeInstanceOf(InvoiceNotFoundError)
+
+        {
+          const walletInvoiceRepo = WalletInvoicesRepository()
+          const result = await walletInvoiceRepo.findByPaymentHash(paymentHash)
+          expect(result).toBeInstanceOf(CouldNotFindWalletInvoiceError)
+        }
+
+        // making sure relooping is a no-op and doesn't throw
+        await handleHeldInvoices(baseLogger)
+      })(),
+    ])
+  })
+
+  it("if trigger is missing the BTC invoice, then it should be processed", async () => {
+    const sats = 25000
+    const memo = "myBtcMemo"
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdB as WalletId,
@@ -117,32 +194,36 @@ describe("UserWallet - Lightning", () => {
           expect(lnInvoiceLookup.isHeld).toBe(true)
         }
 
-        // declining invoice
-        await declineHeldInvoices(baseLogger)
+        // handling invoice
+        await handleHeldInvoices(baseLogger)
 
         const ledger = LedgerService()
         const ledgerTxs = await ledger.getTransactionsByHash(paymentHash)
         if (ledgerTxs instanceof Error) throw ledgerTxs
-        expect(ledgerTxs).toStrictEqual([])
+        expect(ledgerTxs).toHaveLength(1)
 
         const isPaidAfterPay = await checker.invoiceIsPaid()
         expect(isPaidAfterPay).not.toBeInstanceOf(Error)
-        expect(isPaidAfterPay).toBe(false)
+        expect(isPaidAfterPay).toBe(true)
 
         const finalBalance = await getBalanceHelper(walletIdB)
-        expect(finalBalance).toBe(initBalanceB)
+        expect(finalBalance).toBe(initBalanceB + sats)
 
         const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
-        expect(lnInvoiceLookup).toBeInstanceOf(InvoiceNotFoundError)
+        expect(lnInvoiceLookup).not.toBeInstanceOf(Error)
+        if (lnInvoiceLookup instanceof Error) throw lnInvoiceLookup
+        expect(lnInvoiceLookup.isSettled).toBeTruthy()
 
         {
           const walletInvoiceRepo = WalletInvoicesRepository()
           const result = await walletInvoiceRepo.findByPaymentHash(paymentHash)
-          expect(result).toBeInstanceOf(CouldNotFindWalletInvoiceError)
+          expect(result).not.toBeInstanceOf(Error)
+          if (result instanceof Error) throw result
+          expect(result.paid).toBeTruthy()
         }
 
         // making sure relooping is a no-op and doesn't throw
-        await declineHeldInvoices(baseLogger)
+        await handleHeldInvoices(baseLogger)
       })(),
     ])
   })

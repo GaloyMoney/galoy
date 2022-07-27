@@ -17,7 +17,7 @@ import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-re
 import * as LedgerFacade from "@services/ledger/facade"
 import { usdFromBtcMidPriceFn } from "@app/shared"
 
-export const declineHeldInvoices = async (logger: Logger): Promise<void> => {
+export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
 
   const pendingInvoices = invoicesRepo.yieldPending()
@@ -35,7 +35,14 @@ export const declineHeldInvoices = async (logger: Logger): Promise<void> => {
     logger,
     processor: async (walletInvoice: WalletInvoice, index: number) => {
       logger.trace("updating pending invoices %s in worker %d", index)
-      await declineHeldInvoice({ walletInvoice, logger })
+
+      walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
+        ? await updatePendingInvoice({ walletInvoice, logger })
+        : await declineHeldInvoice({
+            pubkey: walletInvoice.pubkey,
+            paymentHash: walletInvoice.paymentHash,
+            logger,
+          })
     },
   })
 
@@ -218,11 +225,13 @@ const updatePendingInvoice = async ({
   })
 }
 
-const declineHeldInvoice = async ({
-  walletInvoice,
+export const declineHeldInvoice = async ({
+  pubkey,
+  paymentHash,
   logger,
 }: {
-  walletInvoice: WalletInvoice
+  pubkey: Pubkey
+  paymentHash: PaymentHash
   logger: Logger
 }): Promise<boolean | ApplicationError> => {
   const lndService = LndService()
@@ -230,14 +239,12 @@ const declineHeldInvoice = async ({
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const { pubkey, paymentHash } = walletInvoice
-
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
 
   const pendingInvoiceLogger = logger.child({
     hash: paymentHash,
+    pubkey,
     lnInvoiceLookup,
-    walletInvoice,
     topic: "payment",
     protocol: "lightning",
     transactionType: "receipt",
