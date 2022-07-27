@@ -47,6 +47,7 @@ type LnInvoiceFeature = {
 }
 
 type LnInvoiceLookup = {
+  readonly paymentHash: PaymentHash
   readonly createdAt: Date
   readonly confirmedAt: Date | undefined
   readonly isSettled: boolean
@@ -214,6 +215,8 @@ interface ILightningService {
   ): Promise<ListLnPaymentsResult | LightningServiceError>
 
   listFailedPayments: ListLnPayments
+
+  listInvoices(lnd: AuthenticatedLnd): Promise<LnInvoiceLookup[] | LightningServiceError>
 
   deletePaymentByHash({
     paymentHash,

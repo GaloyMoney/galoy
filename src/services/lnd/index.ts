@@ -18,6 +18,8 @@ import {
   PayViaRoutesResult,
   deletePayment,
   settleHodlInvoice,
+  getInvoices,
+  GetInvoicesResult,
 } from "lightning"
 import lnService from "ln-service"
 
@@ -308,25 +310,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         id: paymentHash,
       })
 
-      return {
-        createdAt: new Date(invoice.created_at),
-        confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
-        isSettled: !!invoice.is_confirmed,
-        isHeld: !!invoice.is_held,
-        heldAt:
-          invoice.payments && invoice.payments.length
-            ? new Date(invoice.payments[0].created_at)
-            : undefined,
-        roundedDownReceived: toSats(invoice.received),
-        milliSatsReceived: toMilliSatsFromString(invoice.received_mtokens),
-        secretPreImage: invoice.secret as SecretPreImage,
-        lnInvoice: {
-          description: invoice.description,
-          paymentRequest: (invoice.request as EncodedPaymentRequest) || undefined,
-          expiresAt: new Date(invoice.expires_at),
-          roundedDownAmount: toSats(invoice.tokens),
-        },
-      }
+      return translateLnInvoiceLookup(invoice)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
@@ -399,6 +383,30 @@ export const LndService = (): ILightningService | LightningServiceError => {
     return {
       lnPayments: lnPayments.map((p) => ({ ...p, status: PaymentStatus.Failed })),
       endCursor,
+    }
+  }
+
+  const listInvoices = async (
+    lnd: AuthenticatedLnd,
+  ): Promise<LnInvoiceLookup[] | LightningServiceError> => {
+    try {
+      let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
+      let rawInvoices = [] as GetInvoicesResult["invoices"]
+      while (after !== false) {
+        const pagingArgs: {
+          token?: PagingStartToken | PagingContinueToken
+        } = after ? { token: after } : {}
+        const { invoices, next } = await getInvoices({ lnd, ...pagingArgs })
+        rawInvoices = [...rawInvoices, ...invoices]
+        after = (next as PagingContinueToken) || false
+      }
+      return rawInvoices.map(translateLnInvoiceLookup)
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(err)
+      }
     }
   }
 
@@ -610,6 +618,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       listSettledPayments: listPaymentsFactory(getPayments),
       listPendingPayments: listPaymentsFactory(getPendingPayments),
       listFailedPayments,
+      listInvoices,
       deletePaymentByHash,
       settleInvoice,
       cancelInvoice,
@@ -719,6 +728,29 @@ const translateLnPaymentLookup = (p): LnPaymentLookup => ({
       }
     : undefined,
   attempts: p.attempts,
+})
+
+const translateLnInvoiceLookup = (
+  invoice: GetInvoiceResult | GetInvoicesResult["invoices"][number],
+): LnInvoiceLookup => ({
+  paymentHash: invoice.id as PaymentHash,
+  createdAt: new Date(invoice.created_at),
+  confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
+  isSettled: !!invoice.is_confirmed,
+  isHeld: !!invoice.is_held,
+  heldAt:
+    invoice.payments && invoice.payments.length
+      ? new Date(invoice.payments[0].created_at)
+      : undefined,
+  roundedDownReceived: toSats(invoice.received),
+  milliSatsReceived: toMilliSatsFromString(invoice.received_mtokens),
+  secretPreImage: invoice.secret as SecretPreImage,
+  lnInvoice: {
+    description: invoice.description,
+    paymentRequest: (invoice.request as EncodedPaymentRequest) || undefined,
+    expiresAt: new Date(invoice.expires_at),
+    roundedDownAmount: toSats(invoice.tokens),
+  },
 })
 
 const resolvePaymentStatus = async ({
