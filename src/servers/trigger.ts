@@ -21,6 +21,7 @@ import { uploadBackup } from "@app/admin/backup"
 import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
 import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
+import { WalletCurrency } from "@domain/shared"
 
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
@@ -33,6 +34,7 @@ import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import {
   AccountsRepository,
   UsersRepository,
+  WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
 import { LndService } from "@services/lnd"
@@ -265,7 +267,13 @@ const listenerHodlInvoice = ({
   })
 }
 
-const listenerExistingHodlInvoices = async (lnd: AuthenticatedLnd) => {
+const listenerExistingHodlInvoices = async ({
+  lnd,
+  pubkey,
+}: {
+  lnd: AuthenticatedLnd
+  pubkey: Pubkey
+}) => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
@@ -273,6 +281,22 @@ const listenerExistingHodlInvoices = async (lnd: AuthenticatedLnd) => {
   if (invoices instanceof Error) return invoices
 
   for (const lnInvoice of invoices) {
+    if (lnInvoice.isHeld) {
+      const invoicesRepo = WalletInvoicesRepository()
+      const walletInvoice = await invoicesRepo.findByPaymentHash(lnInvoice.paymentHash)
+      if (
+        walletInvoice instanceof Error ||
+        walletInvoice.recipientWalletDescriptor.currency !== WalletCurrency.Btc
+      ) {
+        Wallets.declineHeldInvoice({
+          pubkey,
+          paymentHash: lnInvoice.paymentHash,
+          logger: baseLogger,
+        })
+        continue
+      }
+    }
+
     listenerHodlInvoice({ lnd, paymentHash: lnInvoice.paymentHash })
   }
 }
@@ -287,7 +311,7 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
     subInvoices.removeAllListeners()
   })
 
-  listenerExistingHodlInvoices(lnd)
+  listenerExistingHodlInvoices({ lnd, pubkey })
 
   const subChannels = subscribeToChannels({ lnd })
   subChannels.on("channel_opened", (channel) =>
