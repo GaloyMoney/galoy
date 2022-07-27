@@ -1,5 +1,6 @@
 import express from "express"
 import {
+  GetInvoiceResult,
   subscribeToBackups,
   subscribeToBlocks,
   subscribeToChannels,
@@ -34,6 +35,7 @@ import {
   UsersRepository,
   WalletsRepository,
 } from "@services/mongoose"
+import { LndService } from "@services/lnd"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -181,7 +183,7 @@ export const onchainBlockEventHandler = async (height: number) => {
 }
 
 export const invoiceUpdateEventHandler = async (
-  invoice: SubscribeToInvoiceInvoiceUpdatedEvent,
+  invoice: SubscribeToInvoiceInvoiceUpdatedEvent | GetInvoiceResult,
 ): Promise<boolean | ApplicationError> => {
   logger.info({ invoice }, "invoiceUpdateEventHandler")
   return invoice.is_held
@@ -263,6 +265,18 @@ const listenerHodlInvoice = ({
   })
 }
 
+const listenerExistingHodlInvoices = async (lnd: AuthenticatedLnd) => {
+  const lndService = LndService()
+  if (lndService instanceof Error) return lndService
+
+  const invoices = await lndService.listInvoices(lnd)
+  if (invoices instanceof Error) return invoices
+
+  for (const lnInvoice of invoices) {
+    listenerHodlInvoice({ lnd, paymentHash: lnInvoice.paymentHash })
+  }
+}
+
 const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubkey }) => {
   const subInvoices = subscribeToInvoices({ lnd })
   subInvoices.on("invoice_updated", (invoice: SubscribeToInvoicesInvoiceUpdatedEvent) =>
@@ -272,6 +286,8 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
     baseLogger.info({ err }, "error subInvoices")
     subInvoices.removeAllListeners()
   })
+
+  listenerExistingHodlInvoices(lnd)
 
   const subChannels = subscribeToChannels({ lnd })
   subChannels.on("channel_opened", (channel) =>
