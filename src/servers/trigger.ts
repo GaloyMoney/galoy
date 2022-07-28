@@ -1,4 +1,7 @@
+import EventEmitter from "events"
+
 import express from "express"
+
 import {
   GetInvoiceResult,
   subscribeToBackups,
@@ -301,8 +304,15 @@ const listenerExistingHodlInvoices = async ({
   }
 }
 
-const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubkey }) => {
-  const subInvoices = subscribeToInvoices({ lnd })
+export const setupInvoiceSubscribe = ({
+  lnd,
+  pubkey,
+  subInvoices,
+}: {
+  lnd: AuthenticatedLnd
+  pubkey: Pubkey
+  subInvoices: EventEmitter
+}) => {
   subInvoices.on("invoice_updated", (invoice: SubscribeToInvoicesInvoiceUpdatedEvent) =>
     listenerHodlInvoice({ lnd, paymentHash: invoice.id as PaymentHash }),
   )
@@ -312,6 +322,12 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   })
 
   listenerExistingHodlInvoices({ lnd, pubkey })
+}
+
+const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubkey }) => {
+  const subInvoices = subscribeToInvoices({ lnd })
+
+  setupInvoiceSubscribe({ lnd, pubkey, subInvoices })
 
   const subChannels = subscribeToChannels({ lnd })
   subChannels.on("channel_opened", (channel) =>

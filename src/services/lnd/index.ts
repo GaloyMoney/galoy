@@ -692,7 +692,7 @@ const lookupPaymentByPubkeyAndHash = async ({
   }
 }
 
-const KnownLndErrorDetails = {
+export const KnownLndErrorDetails = {
   InsufficientBalance: "insufficient local balance",
   InvoiceNotFound: "unable to locate invoice",
   InvoiceAlreadyPaid: "invoice is already paid",
