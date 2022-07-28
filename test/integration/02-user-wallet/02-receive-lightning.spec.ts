@@ -62,6 +62,111 @@ afterEach(async () => {
 })
 
 describe("UserWallet - Lightning", () => {
+  it("receives payment from outside", async () => {
+    // larger amount to not fall below the escrow limit
+    const sats = 50000
+    const memo = "myMemo"
+
+    const lnInvoice = await Wallets.addInvoiceForSelf({
+      walletId: walletIdB as WalletId,
+      amount: toSats(sats),
+      memo,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
+    const checker = await Lightning.PaymentStatusChecker(invoice)
+    expect(checker).not.toBeInstanceOf(Error)
+    if (checker instanceof Error) throw checker
+
+    const isPaidBeforePay = await checker.invoiceIsPaid()
+    expect(isPaidBeforePay).not.toBeInstanceOf(Error)
+    expect(isPaidBeforePay).toBe(false)
+
+    const hash = getHash(invoice)
+
+    const updateInvoice = () =>
+      Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      })
+
+    const promises = Promise.all([
+      pay({ lnd: lndOutside1, request: invoice }),
+      (async () => {
+        // TODO: we could use event instead of a sleep to lower test latency
+        await sleep(500)
+        return updateInvoice()
+      })(),
+    ])
+
+    {
+      // first arg is the outsideLndpayResult
+      const [, result] = await promises
+      expect(result).not.toBeInstanceOf(Error)
+    }
+
+    // should be idempotent (not return error when called again)
+    {
+      const result = await updateInvoice()
+      expect(result).not.toBeInstanceOf(Error)
+    }
+
+    const ledger = LedgerService()
+    const ledgerMetadata = TransactionsMetadataRepository()
+    const ledgerTxs = await ledger.getTransactionsByHash(hash)
+    if (ledgerTxs instanceof Error) throw ledgerTxs
+
+    const ledgerTx = ledgerTxs[0]
+    const ledgerTxMetadata = await ledgerMetadata.findById(ledgerTx.id)
+    if (ledgerTxMetadata instanceof Error) throw ledgerTxMetadata
+
+    expect(ledgerTx.credit).toBe(sats)
+    expect(ledgerTx.lnMemo).toBe(memo)
+    expect(ledgerTx.pendingConfirmation).toBe(false)
+
+    expect(ledgerTxMetadata).toHaveProperty("hash")
+    if (!("hash" in ledgerTxMetadata)) return
+    expect(ledgerTxMetadata.hash).toBe(ledgerTx.paymentHash)
+
+    if ("revealedPreImage" in ledgerTxMetadata)
+      expect(ledgerTxMetadata.revealedPreImage).toBeUndefined()
+
+    const isPaidAfterPay = await checker.invoiceIsPaid()
+    expect(isPaidAfterPay).not.toBeInstanceOf(Error)
+    expect(isPaidAfterPay).toBe(true)
+
+    // check that memo is not filtered by spam filter
+    const { result: txns, error } = await Wallets.getTransactionsForWalletId({
+      walletId: walletIdB,
+    })
+    if (error instanceof Error || txns === null) {
+      throw error
+    }
+    const noSpamTxn = txns.find(
+      (txn) =>
+        txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
+        txn.initiationVia.paymentHash === hash,
+    ) as WalletTransaction
+    expect(noSpamTxn.memo).toBe(memo)
+
+    const finalBalance = await getBalanceHelper(walletIdB)
+    expect(finalBalance).toBe(initBalanceB + sats)
+
+    const imbalanceCalc = ImbalanceCalculator({
+      method: WithdrawalFeePriceMethod.proportionalOnImbalance,
+      sinceDaysAgo: 1 as Days,
+      volumeLightningFn: ledger.lightningTxBaseVolumeSince,
+      volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
+    })
+
+    // FIXME: Needs to be in the first test so that previous volume for wallet is 0.
+    const imbalance = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    if (imbalance instanceof Error) throw imbalance
+
+    expect(imbalance).toBe(sats)
+  })
+
   it("if trigger is missing the USD invoice, then it should be denied", async () => {
     /*
       the reason we are doing this behavior is to limit the discrepancy between our books,
@@ -226,110 +331,6 @@ describe("UserWallet - Lightning", () => {
         await handleHeldInvoices(baseLogger)
       })(),
     ])
-  })
-
-  it("receives payment from outside", async () => {
-    // larger amount to not fall below the escrow limit
-    const sats = 50000
-    const memo = "myMemo"
-
-    const lnInvoice = await Wallets.addInvoiceForSelf({
-      walletId: walletIdB as WalletId,
-      amount: toSats(sats),
-      memo,
-    })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: invoice } = lnInvoice
-
-    const checker = await Lightning.PaymentStatusChecker(invoice)
-    expect(checker).not.toBeInstanceOf(Error)
-    if (checker instanceof Error) throw checker
-
-    const isPaidBeforePay = await checker.invoiceIsPaid()
-    expect(isPaidBeforePay).not.toBeInstanceOf(Error)
-    expect(isPaidBeforePay).toBe(false)
-
-    const hash = getHash(invoice)
-
-    const updateInvoice = () =>
-      Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
-        logger: baseLogger,
-      })
-
-    const promises = Promise.all([
-      pay({ lnd: lndOutside1, request: invoice }),
-      (async () => {
-        // TODO: we could use event instead of a sleep to lower test latency
-        await sleep(500)
-        return updateInvoice()
-      })(),
-    ])
-
-    {
-      // first arg is the outsideLndpayResult
-      const [, result] = await promises
-      expect(result).not.toBeInstanceOf(Error)
-    }
-
-    // should be idempotent (not return error when called again)
-    {
-      const result = await updateInvoice()
-      expect(result).not.toBeInstanceOf(Error)
-    }
-
-    const ledger = LedgerService()
-    const ledgerMetadata = TransactionsMetadataRepository()
-    const ledgerTxs = await ledger.getTransactionsByHash(hash)
-    if (ledgerTxs instanceof Error) throw ledgerTxs
-
-    const ledgerTx = ledgerTxs[0]
-    const ledgerTxMetadata = await ledgerMetadata.findById(ledgerTx.id)
-    if (ledgerTxMetadata instanceof Error) throw ledgerTxMetadata
-
-    expect(ledgerTx.credit).toBe(sats)
-    expect(ledgerTx.lnMemo).toBe(memo)
-    expect(ledgerTx.pendingConfirmation).toBe(false)
-
-    expect(ledgerTxMetadata).toHaveProperty("hash")
-    if (!("hash" in ledgerTxMetadata)) return
-    expect(ledgerTxMetadata.hash).toBe(ledgerTx.paymentHash)
-
-    if ("revealedPreImage" in ledgerTxMetadata)
-      expect(ledgerTxMetadata.revealedPreImage).toBeUndefined()
-
-    const isPaidAfterPay = await checker.invoiceIsPaid()
-    expect(isPaidAfterPay).not.toBeInstanceOf(Error)
-    expect(isPaidAfterPay).toBe(true)
-
-    // check that memo is not filtered by spam filter
-    const { result: txns, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdB,
-    })
-    if (error instanceof Error || txns === null) {
-      throw error
-    }
-    const noSpamTxn = txns.find(
-      (txn) =>
-        txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
-        txn.initiationVia.paymentHash === hash,
-    ) as WalletTransaction
-    expect(noSpamTxn.memo).toBe(memo)
-
-    const finalBalance = await getBalanceHelper(walletIdB)
-    expect(finalBalance).toBe(initBalanceB + sats)
-
-    const imbalanceCalc = ImbalanceCalculator({
-      method: WithdrawalFeePriceMethod.proportionalOnImbalance,
-      sinceDaysAgo: 1 as Days,
-      volumeLightningFn: ledger.lightningTxBaseVolumeSince,
-      volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
-    })
-
-    const imbalance = await imbalanceCalc.getSwapOutImbalance(walletIdB)
-    if (imbalance instanceof Error) throw imbalance
-
-    expect(imbalance).toBe(sats)
   })
 
   it("receives payment from outside to USD wallet with amount", async () => {
