@@ -19,9 +19,9 @@ export const updateLnPayments = async (): Promise<true | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  const listFns: ListLnPayments[] = [
-    lndService.listSettledPayments,
-    lndService.listFailedPayments,
+  const listFns: { name: string; fn: ListLnPayments }[] = [
+    { name: "listSettledPayments", fn: lndService.listSettledPayments },
+    { name: "listFailedPayments", fn: lndService.listFailedPayments },
   ]
   const pubkeys = lndService
     .listActivePubkeys()
@@ -52,7 +52,7 @@ const updateLnPaymentsByFunction = async ({
   processedLnPaymentsHashes: PaymentHash[]
   incompleteLnPayments: PersistedLnPaymentLookup[]
   pubkey: Pubkey
-  listFn: ListLnPayments
+  listFn: { name: string; fn: ListLnPayments }
 }): Promise<PaymentHash[]> => {
   let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
   let updatedProcessedHashes = processedLnPaymentsHashes
@@ -84,7 +84,7 @@ const updateLnPaymentsByFunction = async ({
           incompleteLnPayments,
           after,
           pubkey,
-          listFn,
+          listFn: listFn.fn,
         })
       },
     )
