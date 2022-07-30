@@ -155,21 +155,22 @@ export const startApolloServer = async ({
         schema,
         // onConnect: // TODO: if token is present, but jwt.verify fails, close connection
         context: (ctx) => {
-          const headers = ctx.connectionParams?.headers as Record<string, string>
+          const connectionParams = ctx.connectionParams as Record<string, string>
 
           // TODO: check if nginx pass the ip to the header
           // TODO: ip not been used currently for subscription.
           // implement some rate limiting.
           const ipString = isDev
-            ? headers?.ip
-            : headers?.["x-real-ip"] || headers?.["x-forwarded-for"]
+            ? connectionParams?.ip
+            : connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
 
           const ip = parseIps(ipString)
 
-          if (headers) {
+          if (connectionParams) {
             let tokenPayload: string | jwt.JwtPayload | null = null
             const authz =
-              (headers.authorization as string) || (headers.Authorization as string)
+              (connectionParams.authorization as string) ||
+              (connectionParams.Authorization as string)
             if (authz) {
               const rawToken = authz.slice(7)
               tokenPayload = jwt.verify(rawToken, JWT_SECRET, {

@@ -10,10 +10,10 @@
     "@jridgewell/gen-mapping" "^0.1.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@anvilco/apollo-server-plugin-introspection-metadata@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@anvilco/apollo-server-plugin-introspection-metadata/-/apollo-server-plugin-introspection-metadata-1.1.1.tgz#f4b3d0c817e9cc25125973e6ba55a51d37e73f10"
-  integrity sha512-GhcaXjBYsf61n3cCQiO9sJXGmfVxvh1GD1xWsDPiN8TUo0UKJK2E6XbTXlUq5hFKWpZAa71e8dRwsyrAsG3vxw==
+"@anvilco/apollo-server-plugin-introspection-metadata@^1.2.0":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@anvilco/apollo-server-plugin-introspection-metadata/-/apollo-server-plugin-introspection-metadata-1.2.1.tgz#d1d7a01b541c3d440654ef3462bfe46becc79d36"
+  integrity sha512-h8pjIhi+bfhCBs7fmcDgCCjaprpDsl9ETeIc1hkPTcnUola/h+DFg/vNLA01UxCdLDhSV6J05yFmY/eh/hRCFA==
   dependencies:
     lodash.get "^4.4.2"
     lodash.set "^4.3.2"
@@ -1182,33 +1182,7 @@
   resolved "https://registry.yarnpkg.com/@google-cloud/promisify/-/promisify-3.0.0.tgz#5cd6941fc30c4acac18051706aa5af96069bd3e3"
   integrity sha512-91ArYvRgXWb73YvEOBMmOcJc0bDRs5yiVHnqkwoG0f3nm7nZuipllz6e7BvFESBvjkDTBC0zMD8QxedUwNLc1A==
 
-"@google-cloud/storage@^6.0.1":
-  version "6.2.3"
-  resolved "https://registry.yarnpkg.com/@google-cloud/storage/-/storage-6.2.3.tgz#e3dae8708488cf2e0e4fbf0488083d9d279ee097"
-  integrity sha512-UJqn3Ln8wFBPLuwBaNu3PlhzQDL3EKKfP1+3mzLRQhcFqgpBSMPLDgAXxc6e9S0l0kqsi4GOuAA7fA+l/VAMjQ==
-  dependencies:
-    "@google-cloud/paginator" "^3.0.7"
-    "@google-cloud/projectify" "^3.0.0"
-    "@google-cloud/promisify" "^3.0.0"
-    abort-controller "^3.0.0"
-    arrify "^2.0.0"
-    async-retry "^1.3.3"
-    compressible "^2.0.12"
-    duplexify "^4.0.0"
-    ent "^2.2.0"
-    extend "^3.0.2"
-    gaxios "^5.0.0"
-    google-auth-library "^8.0.1"
-    mime "^3.0.0"
-    mime-types "^2.0.8"
-    p-limit "^3.0.1"
-    pumpify "^2.0.0"
-    retry-request "^5.0.0"
-    stream-events "^1.0.4"
-    teeny-request "^8.0.0"
-    uuid "^8.0.0"
-
-"@google-cloud/storage@^6.1.0":
+"@google-cloud/storage@^6.0.1", "@google-cloud/storage@^6.1.0":
   version "6.2.3"
   resolved "https://registry.yarnpkg.com/@google-cloud/storage/-/storage-6.2.3.tgz#e3dae8708488cf2e0e4fbf0488083d9d279ee097"
   integrity sha512-UJqn3Ln8wFBPLuwBaNu3PlhzQDL3EKKfP1+3mzLRQhcFqgpBSMPLDgAXxc6e9S0l0kqsi4GOuAA7fA+l/VAMjQ==
@@ -1314,6 +1288,13 @@
   version "8.8.0"
   resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-8.8.0.tgz#8332ff80a1da9204ccf514750dd6f5c5cccf17dc"
   integrity sha512-KJrtx05uSM/cPYFdTnGAS1doL5bftJLAiFCDMZ8Vkifztz3BFn3gpFiy/o4wDtM8s39G46mxmt2Km/RmeltfGw==
+  dependencies:
+    tslib "^2.4.0"
+
+"@graphql-tools/utils@^8.8.0":
+  version "8.9.0"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-8.9.0.tgz#c6aa5f651c9c99e1aca55510af21b56ec296cdb7"
+  integrity sha512-pjJIWH0XOVnYGXCqej8g/u/tsfV4LvLlj0eATKQu5zwnxd/TiTHq7Cg313qUPTFFHZ3PP5wJ15chYVtLDwaymg==
   dependencies:
     tslib "^2.4.0"
 
@@ -7748,10 +7729,10 @@ methods@~1.1.2:
   resolved "https://registry.yarnpkg.com/methods/-/methods-1.1.2.tgz#5529a4d67654134edcc5266656835b0f851afcee"
   integrity sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==
 
-microfiber@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/microfiber/-/microfiber-1.1.1.tgz#588e7c45dddbbffebacd6f018579c5fc87354861"
-  integrity sha512-2ASA3WVKlrJh5Z/MLo43Nf2k03T4NnYrCsi6AUQ+fon2LfHBwo74ZwJ1h8qmi/T+gwnLEJoMBQqVaQpXgwU5dA==
+microfiber@^1.3.0:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/microfiber/-/microfiber-1.3.1.tgz#0ad185301fd4eb27ed312642a2002e257a51f75b"
+  integrity sha512-0yMqNUD/SDSCg/NHj2MPQvFo8s9RQCoerMkT2odgvUkXqf5c/giC9Jed2g2oPGFW+TJIk926/SUjiS5gO8a+Sg==
   dependencies:
     lodash.defaults "^4.2.0"
     lodash.get "^4.4.2"
@@ -9770,15 +9751,17 @@ sparse-bitfield@^3.0.3:
   dependencies:
     memory-pager "^1.0.2"
 
-spectaql@^1.2.2:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/spectaql/-/spectaql-1.4.2.tgz#e4ca942fdd0bbf030442db0cb67c94ff8f618b35"
-  integrity sha512-LD1oGUxPFEdU/onGRDkA/LUIVTHV8DEvTnFAk6Qvr5AHbT35HhuLxwCl6EAmf9tujhjoIb5JrahxEarTMCUGkw==
+spectaql@^1.4.2:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/spectaql/-/spectaql-1.5.1.tgz#3bcb4d3a416f7e83427958cd2947989c6cd862f9"
+  integrity sha512-RxyGm/YYwbjxSw96qVgFV/lzrDqsmL+CMJN5HZbujs0gIdTQ2P/VVziQMdXHauGbRkmEX/I1kXgIrIRlyoFl4A==
   dependencies:
-    "@anvilco/apollo-server-plugin-introspection-metadata" "^1.1.1"
+    "@anvilco/apollo-server-plugin-introspection-metadata" "^1.2.0"
     "@anvilco/grunt-embed" "^0.0.1"
     "@graphql-tools/load-files" "^6.3.2"
     "@graphql-tools/merge" "^8.1.2"
+    "@graphql-tools/schema" "^8.5.0"
+    "@graphql-tools/utils" "^8.8.0"
     cheerio "^1.0.0-rc.10"
     coffeescript "^2.6.1"
     commander "^9.1.0"
@@ -9804,7 +9787,7 @@ spectaql@^1.2.2:
     json5 "^2.2.0"
     lodash "^4.17.12"
     marked "^4.0.12"
-    microfiber "^1.1.0"
+    microfiber "^1.3.0"
     sass "^1.32.13"
     sync-request "^6.1.0"
     tmp "0.2.1"
