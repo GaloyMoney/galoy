@@ -377,7 +377,10 @@ type ImbalanceCalculatorConfig = {
 }
 
 type ImbalanceCalculator = {
-  getSwapOutImbalance: (
-    walletId: WalletId,
+  getSwapOutImbalance: <T extends WalletCurrency>(
+    wallet: WalletDescriptor<T>,
   ) => Promise<SwapOutImbalance | LedgerServiceError>
+  getSwapOutImbalanceAmount: <T extends WalletCurrency>(
+    wallet: WalletDescriptor<T>,
+  ) => Promise<PaymentAmount<T> | LedgerServiceError | ValidationError>
 }

@@ -33,7 +33,7 @@ describe("ImbalanceCalculator", () => {
         volumeLightningFn: VolumeAfterLightningReceiptFn,
         volumeOnChainFn: NoVolumeFn,
       })
-      const imbalance = await calculator.getSwapOutImbalance(btcWallet.id)
+      const imbalance = await calculator.getSwapOutImbalance(btcWallet)
       if (imbalance instanceof Error) throw imbalance
       expect(imbalance).toBe(500)
     })
@@ -44,7 +44,7 @@ describe("ImbalanceCalculator", () => {
         volumeLightningFn: VolumeAfterLightningPaymentFn,
         volumeOnChainFn: NoVolumeFn,
       })
-      const imbalance = await calculator.getSwapOutImbalance(btcWallet.id)
+      const imbalance = await calculator.getSwapOutImbalance(btcWallet)
       if (imbalance instanceof Error) throw imbalance
       expect(imbalance).toBe(-600)
     })
@@ -55,7 +55,7 @@ describe("ImbalanceCalculator", () => {
         volumeLightningFn: NoVolumeFn,
         volumeOnChainFn: VolumeAfterOnChainReceiptFn,
       })
-      const imbalance = await calculator.getSwapOutImbalance(btcWallet.id)
+      const imbalance = await calculator.getSwapOutImbalance(btcWallet)
       if (imbalance instanceof Error) throw imbalance
       expect(imbalance).toBe(-700)
     })
@@ -66,7 +66,7 @@ describe("ImbalanceCalculator", () => {
         volumeLightningFn: NoVolumeFn,
         volumeOnChainFn: VolumeAfterOnChainPaymentFn,
       })
-      const imbalance = await calculator.getSwapOutImbalance(btcWallet.id)
+      const imbalance = await calculator.getSwapOutImbalance(btcWallet)
       if (imbalance instanceof Error) throw imbalance
       expect(imbalance).toBe(800)
     })
@@ -77,7 +77,7 @@ describe("ImbalanceCalculator", () => {
         volumeLightningFn: VolumeAfterLightningReceiptFn,
         volumeOnChainFn: VolumeAfterOnChainPaymentFn,
       })
-      const imbalance = await calculator.getSwapOutImbalance(btcWallet.id)
+      const imbalance = await calculator.getSwapOutImbalance(btcWallet)
       if (imbalance instanceof Error) throw imbalance
       expect(imbalance).toBe(800 + 500)
     })
@@ -88,7 +88,7 @@ describe("ImbalanceCalculator", () => {
         volumeLightningFn: VolumeAfterLightningPaymentFn,
         volumeOnChainFn: VolumeAfterOnChainReceiptFn,
       })
-      const imbalance = await calculator.getSwapOutImbalance(btcWallet.id)
+      const imbalance = await calculator.getSwapOutImbalance(btcWallet)
       if (imbalance instanceof Error) throw imbalance
       expect(imbalance).toBe(-700 - 600)
     })
@@ -103,7 +103,7 @@ describe("ImbalanceCalculator", () => {
         volumeLightningFn: VolumeAfterLightningReceiptFn,
         volumeOnChainFn: NoVolumeFn,
       })
-      const imbalance = await calculator.getSwapOutImbalance(btcWallet.id)
+      const imbalance = await calculator.getSwapOutImbalance(btcWallet)
       if (imbalance instanceof Error) throw imbalance
       expect(imbalance).toBe(0)
     })

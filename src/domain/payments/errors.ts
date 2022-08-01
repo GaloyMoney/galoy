@@ -21,3 +21,7 @@ export class InvalidLightningPaymentFlowBuilderStateError extends ValidationErro
 export class InvalidLightningPaymentFlowStateError extends ValidationError {
   level = ErrorLevel.Critical
 }
+
+export class InvalidOnChainPaymentFlowBuilderStateError extends ValidationError {
+  level = ErrorLevel.Critical
+}

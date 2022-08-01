@@ -151,6 +151,7 @@ fees:
     method: "flat" # flat || proportionalOnImbalance
     defaultMin: 2000 # 2000 sats flat per tx
     ratio: 0.005 # only used with "proportional-on-imbalance"
+    ratioAsBasisPoints: 50 # only used with "proportional-on-imbalance"
     threshold: 1000000 # only used with "proportional-on-imbalance"
     daysLookback: 30 # only used with "proportional-on-imbalance"
   deposit: 0.003 # 0.3 percent

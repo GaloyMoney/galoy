@@ -66,6 +66,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
           inputAmount,
           senderWalletCurrency: senderCurrency,
         })
+        if (paymentFlow instanceof Error) throw paymentFlow
 
         it("passes for send amount under balance", () => {
           const balanceForSend = {

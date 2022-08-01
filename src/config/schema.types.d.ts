@@ -100,6 +100,7 @@ type YamlSchema = {
     withdraw: {
       method: string
       ratio: number
+      ratioAsBasisPoints: bigint
       threshold: number
       daysLookback: number
       defaultMin: number

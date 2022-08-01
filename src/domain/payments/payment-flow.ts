@@ -10,9 +10,9 @@ import {
 
 import { RouteValidator } from "./route-validator"
 
-export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
-  state: PaymentFlowState<S, R>,
-): PaymentFlow<S, R> => {
+export const PaymentFlowBase = <S extends WalletCurrency, R extends WalletCurrency>(
+  state: PaymentFlowBaseState<S, R>,
+): PaymentFlowBase<S, R> => {
   const protocolFeeInSenderWalletCurrency = (): PaymentAmount<S> => {
     return state.senderWalletCurrency === WalletCurrency.Btc
       ? (state.btcProtocolFee as PaymentAmount<S>)
@@ -103,8 +103,24 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     return true
   }
 
+  return {
+    protocolFeeInSenderWalletCurrency,
+    paymentAmounts,
+    totalAmountsForPayment,
+    routeDetails,
+    recipientDetails,
+    senderWalletDescriptor,
+    recipientWalletDescriptor,
+    checkBalanceForSend,
+  }
+}
+
+export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
+  state: PaymentFlowState<S, R>,
+): PaymentFlow<S, R> | ValidationError => {
+  const { paymentHash, intraLedgerHash, ...baseState } = state
+
   const paymentHashForFlow = (): PaymentHash | ValidationError => {
-    const { paymentHash, intraLedgerHash } = state
     if (!!paymentHash === !!intraLedgerHash) {
       return new InvalidLightningPaymentFlowBuilderStateError()
     }
@@ -117,7 +133,6 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   }
 
   const intraLedgerHashForFlow = (): IntraLedgerHash | ValidationError => {
-    const { paymentHash, intraLedgerHash } = state
     if (!!paymentHash === !!intraLedgerHash) {
       return new InvalidLightningPaymentFlowBuilderStateError()
     }
@@ -131,15 +146,28 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
 
   return {
     ...state,
-    protocolFeeInSenderWalletCurrency,
-    paymentAmounts,
-    totalAmountsForPayment,
-    routeDetails,
-    recipientDetails,
-    senderWalletDescriptor,
-    recipientWalletDescriptor,
-    checkBalanceForSend,
+    ...PaymentFlowBase(baseState),
     paymentHashForFlow,
     intraLedgerHashForFlow,
+  }
+}
+
+export const OnChainPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
+  state: OnChainPaymentFlowState<S, R>,
+): OnChainPaymentFlow<S, R> => {
+  const { address, ...baseState } = state
+
+  const addressForFlow = (): OnChainAddress | ValidationError => {
+    if (address === undefined) {
+      return new InvalidLightningPaymentFlowBuilderStateError()
+    }
+
+    return address
+  }
+
+  return {
+    ...state,
+    ...PaymentFlowBase(baseState),
+    addressForFlow,
   }
 }

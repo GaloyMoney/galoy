@@ -189,4 +189,44 @@ describe("AmountCalculator", () => {
       expect(percentageOfAmount.amount).toEqual(expectedAmount)
     })
   })
+
+  describe("min", () => {
+    it("returns the min from 2 payment amounts", () => {
+      const minimum = calc.min(
+        { amount: 10n, currency: WalletCurrency.Btc },
+        { amount: 3n, currency: WalletCurrency.Btc },
+      )
+      expect(minimum).toStrictEqual({ amount: 3n, currency: WalletCurrency.Btc })
+    })
+
+    it("returns the min from multiple payment amounts", () => {
+      const paymentAmounts = [
+        { amount: 10n, currency: WalletCurrency.Btc },
+        { amount: 3n, currency: WalletCurrency.Btc },
+        { amount: 7n, currency: WalletCurrency.Btc },
+      ]
+      const minimum = calc.min(...paymentAmounts)
+      expect(minimum).toStrictEqual({ amount: 3n, currency: WalletCurrency.Btc })
+    })
+  })
+
+  describe("max", () => {
+    it("returns the max from 2 payment amounts", () => {
+      const maximum = calc.max(
+        { amount: 10n, currency: WalletCurrency.Btc },
+        { amount: 3n, currency: WalletCurrency.Btc },
+      )
+      expect(maximum).toStrictEqual({ amount: 10n, currency: WalletCurrency.Btc })
+    })
+
+    it("returns the max from multiple payment amounts", () => {
+      const paymentAmounts = [
+        { amount: 10n, currency: WalletCurrency.Btc },
+        { amount: 3n, currency: WalletCurrency.Btc },
+        { amount: 7n, currency: WalletCurrency.Btc },
+      ]
+      const maximum = calc.max(...paymentAmounts)
+      expect(maximum).toStrictEqual({ amount: 10n, currency: WalletCurrency.Btc })
+    })
+  })
 })

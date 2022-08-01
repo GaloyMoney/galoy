@@ -276,6 +276,7 @@ export const configSchema = {
               enum: ["flat", "proportionalOnImbalance"],
             },
             ratio: { type: "number" },
+            ratioAsBasisPoints: { type: "number" },
             threshold: { type: "integer" },
             daysLookback: { type: "integer" },
             defaultMin: { type: "integer" },

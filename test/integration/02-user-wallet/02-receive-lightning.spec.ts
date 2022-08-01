@@ -27,6 +27,7 @@ import {
 } from "test/helpers"
 
 let walletIdB: WalletId
+let walletDescriptorB: WalletDescriptor<WalletCurrency>
 let walletIdUsdB: WalletId
 let initBalanceB: Satoshis
 
@@ -37,6 +38,7 @@ jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  walletDescriptorB = { id: walletIdB, currency: WalletCurrency.Btc }
   walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
 })
 
@@ -136,7 +138,7 @@ describe("UserWallet - Lightning", () => {
       volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
     })
 
-    const imbalance = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    const imbalance = await imbalanceCalc.getSwapOutImbalance(walletDescriptorB)
     if (imbalance instanceof Error) throw imbalance
 
     expect(imbalance).toBe(sats)

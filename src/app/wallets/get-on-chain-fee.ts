@@ -83,7 +83,7 @@ export const getOnChainFee = async ({
     sinceDaysAgo: feeConfig.withdrawDaysLookback,
   })
 
-  const imbalance = await imbalanceCalculator.getSwapOutImbalance(walletId)
+  const imbalance = await imbalanceCalculator.getSwapOutImbalance(wallet)
   if (imbalance instanceof Error) return imbalance
 
   const fees = withdrawFeeCalculator.onChainWithdrawalFee({

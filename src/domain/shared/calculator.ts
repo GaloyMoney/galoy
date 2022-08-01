@@ -53,6 +53,12 @@ export const AmountCalculator = (): AmountCalculator => {
   ) =>
     divRound({ amount: amount.amount * basisPoints, currency: amount.currency }, 10_000n)
 
+  const min = <T extends WalletCurrency>(...args: PaymentAmount<T>[]) =>
+    args.reduce((min, val) => (val.amount < min.amount ? val : min))
+
+  const max = <T extends WalletCurrency>(...args: PaymentAmount<T>[]) =>
+    args.reduce((max, val) => (val.amount > max.amount ? val : max))
+
   return {
     sub,
     add,
@@ -60,5 +66,7 @@ export const AmountCalculator = (): AmountCalculator => {
     divFloor,
     divCeil,
     mulBasisPoints,
+    min,
+    max,
   }
 }
