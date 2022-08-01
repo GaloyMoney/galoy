@@ -1110,7 +1110,7 @@
     "@firebase/util" "1.6.3"
     tslib "^2.1.0"
 
-"@firebase/database-compat@^0.2.0":
+"@firebase/database-compat@^0.2.3":
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/@firebase/database-compat/-/database-compat-0.2.3.tgz#023ee1444088dd49714f93dcb2dff63d4b9a8589"
   integrity sha512-uwSMnbjlSQM5gQRq8OoBLs7uc7obwsl0D6kSDAnMOlPtPl9ert79Rq9faU/COjybsJ8l7tNXMVYYJo3mQ5XNrA==
@@ -4980,13 +4980,13 @@ fined@^1.2.0:
     object.pick "^1.2.0"
     parse-filepath "^1.0.1"
 
-firebase-admin@^11.0.0:
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-11.0.0.tgz#b10355cd9b142cf305fcb7842b51f918d3745a11"
-  integrity sha512-x56u+Q1P8QDvQKaYRe29ZUM/3f829cP8tsKCDXOhaIX/GbGfgcdjRhPmCafzlwgCWP5wW9NkOgIhnrw94zucvw==
+firebase-admin@^11.0.1:
+  version "11.0.1"
+  resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-11.0.1.tgz#68b11b55af70eb9b9a4c8b2cdfa86c892e9ba91b"
+  integrity sha512-rL3wlZbi2Kb/KJgcmj1YHlD4ZhfmhfgRO2YJialxAllm0tj1IQea878hHuBLGmv4DpbW9t9nLvX9kddNR2Y65Q==
   dependencies:
     "@fastify/busboy" "^1.1.0"
-    "@firebase/database-compat" "^0.2.0"
+    "@firebase/database-compat" "^0.2.3"
     "@firebase/database-types" "^0.9.7"
     "@types/node" ">=12.12.47"
     jsonwebtoken "^8.5.1"
