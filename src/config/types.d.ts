@@ -29,4 +29,5 @@ type TwoFAConfig = {
 
 type AccountsConfig = {
   initialStatus: AccountStatus
+  customFields: CustomField[]
 }

@@ -5,7 +5,7 @@ import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { Languages } from "@domain/users"
-import mongoose from "mongoose"
+import mongoose, { IndexDirection } from "mongoose"
 
 import { WalletRecord } from "./wallets"
 
@@ -345,3 +345,28 @@ const PhoneCodeSchema = new Schema({
 })
 
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
+
+const AccountCustomFieldsSchema = new Schema<AccountCustomFieldsRecord>({
+  accountId: Schema.Types.ObjectId,
+  customFields: Schema.Types.Mixed,
+  modifiedByUserId: Schema.Types.ObjectId,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+})
+
+AccountCustomFieldsSchema.index({ accountId: 1, createdAt: -1 })
+
+const customFieldsIndexes = getAccountsConfig()
+  .customFields.filter((cf) => !!cf.index)
+  .map((cf) => ({ [`customFields.${cf.name}`]: 1 as IndexDirection }))
+
+for (const index of customFieldsIndexes) {
+  AccountCustomFieldsSchema.index(index)
+}
+
+export const AccountCustomFields = mongoose.model<AccountCustomFieldsRecord>(
+  "AccountCustomFields",
+  AccountCustomFieldsSchema,
+)

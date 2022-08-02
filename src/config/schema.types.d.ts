@@ -16,6 +16,14 @@ type AccountLimitsConfig = {
   }
 }
 
+type CustomField = {
+  name: string
+  type?: "string" | "integer" | "float" | "boolean"
+  required?: boolean
+  editable?: boolean
+  index?: boolean
+}
+
 type YamlSchema = {
   PROXY_CHECK_APIKEY: string
   name: string
@@ -78,6 +86,7 @@ type YamlSchema = {
   }
   accounts: {
     initialStatus: string
+    customFields: CustomField[]
   }
   accountLimits: {
     withdrawal: AccountLimitsConfig

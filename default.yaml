@@ -124,6 +124,23 @@ rateLimits:
 
 accounts:
   initialStatus: active
+  customFields:
+    - name: "firstName"
+      type: "string"
+      required: true
+      editable: true
+      index: true
+    - name: "lastName"
+      type: "string"
+      editable: true
+      required: false
+    - name: "onlyAdminField"
+      type: "integer"
+      required: false
+      index: true
+    # - name: "otherField2"
+    #   type: "boolean"
+    #   required: false
 
 accountLimits:
   withdrawal:

@@ -32,8 +32,10 @@ export async function startApolloServerForAdminSchema() {
         listWalletIds: and(isAuthenticated, isEditor),
       },
       Mutation: {
-        accountUpdateStatus: and(isAuthenticated, isEditor),
         accountUpdateLevel: and(isAuthenticated, isEditor),
+        accountUpdateStatus: and(isAuthenticated, isEditor),
+        accountsAddUsdWallet: and(isAuthenticated, isEditor),
+        accountCustomFieldsUpdate: and(isAuthenticated, isEditor),
         businessUpdateMapInfo: and(isAuthenticated, isEditor),
         coldStorageRebalanceToHotWallet: and(isAuthenticated, isEditor),
       },

@@ -1,4 +1,7 @@
-import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
+import {
+  CouldNotFindError,
+  CouldNotFindTransactionsForAccountError,
+} from "@domain/errors"
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import { connectionArgs, connectionFromArray } from "graphql-relay"
@@ -15,6 +18,7 @@ import Wallet from "../abstract/wallet"
 import WalletId from "../scalar/wallet-id"
 
 import { TransactionConnection } from "./transaction"
+import AccountCustomFields from "./account-custom-fields"
 
 const ConsumerAccount = GT.Object({
   name: "ConsumerAccount",
@@ -90,6 +94,17 @@ const ConsumerAccount = GT.Object({
         }
 
         return connectionFromArray<WalletTransaction>(transactions, args)
+      },
+    },
+    data: {
+      description: "Additional account information",
+      type: AccountCustomFields,
+      resolve: async (source: Account) => {
+        const accountCustomFields = await Accounts.getAccountCustomFields(source.id)
+        if (accountCustomFields instanceof CouldNotFindError) return null
+        if (accountCustomFields instanceof Error) throw accountCustomFields
+
+        return accountCustomFields.customFields
       },
     },
   }),

@@ -46,6 +46,13 @@ type AccountStatusHistory = Array<{
   comment?: string
 }>
 
+type AccountCustomFields = {
+  readonly accountId: AccountId
+  modifiedByUserId: UserId
+  customFields: { [k: string]: string | number | boolean }
+  createdAt: Date
+}
+
 type Account = {
   readonly id: AccountId
   readonly createdAt: Date
@@ -113,6 +120,17 @@ type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
 }
 
+type ListByCustomFieldArgs = {
+  key: string
+  value: string | number | boolean
+}
+
+type PersistNewCustomFieldsArgs = {
+  accountId: AccountId
+  modifiedByUserId: UserId
+  customFields: { [k: string]: string | number | boolean }
+}
+
 interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
@@ -120,6 +138,16 @@ interface IAccountsRepository {
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
   update(account: Account): Promise<Account | RepositoryError>
+}
+
+interface IAccountCustomFieldsRepository {
+  findById(accountId: AccountId): Promise<AccountCustomFields | RepositoryError>
+  listByCustomField(
+    args: ListByCustomFieldArgs,
+  ): Promise<AccountCustomFields[] | RepositoryError>
+  persistNew(
+    data: PersistNewCustomFieldsArgs,
+  ): Promise<AccountCustomFields | RepositoryError>
 }
 
 type TestAccount = {
