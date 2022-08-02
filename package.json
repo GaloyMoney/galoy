@@ -74,7 +74,7 @@
     "ioredis-cache": "^1.4.1",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
-    "lightning": "^5.16.2",
+    "lightning": "^5.16.6",
     "ln-service": "^53.17.2",
     "lodash.difference": "^4.5.0",
     "lodash.find": "^4.6.0",

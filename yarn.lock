@@ -1346,6 +1346,14 @@
     "@grpc/proto-loader" "^0.6.4"
     "@types/node" ">=12.12.47"
 
+"@grpc/grpc-js@1.6.8":
+  version "1.6.8"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.6.8.tgz#77cc8b2d841c34dea8b105d45ff1732caefae4f2"
+  integrity sha512-Nt5tufF/O5Q310kP0cDzxznWMZW58GCTZhUUiAQ9B0K0ANKNQ4Lj/K9XK0vZg+UBKq5/7z7+8mXHHfrcwoeFJQ==
+  dependencies:
+    "@grpc/proto-loader" "^0.7.0"
+    "@types/node" ">=12.12.47"
+
 "@grpc/proto-loader@0.6.13", "@grpc/proto-loader@^0.6.12", "@grpc/proto-loader@^0.6.13", "@grpc/proto-loader@^0.6.4":
   version "0.6.13"
   resolved "https://registry.yarnpkg.com/@grpc/proto-loader/-/proto-loader-0.6.13.tgz#008f989b72a40c60c96cd4088522f09b05ac66bc"
@@ -1355,6 +1363,17 @@
     lodash.camelcase "^4.3.0"
     long "^4.0.0"
     protobufjs "^6.11.3"
+    yargs "^16.2.0"
+
+"@grpc/proto-loader@0.7.0", "@grpc/proto-loader@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@grpc/proto-loader/-/proto-loader-0.7.0.tgz#743cc8a941cc251620c66ebe0d330e1411a33535"
+  integrity sha512-SGPZtVmqOvNfPFOA/nNPn+0Weqa5wubBgQ56+JgTbeLY2VezwtMjwPPFzh0kvQccwWT3a2TXT0ZGK/pJoOTk1A==
+  dependencies:
+    "@types/long" "^4.0.1"
+    lodash.camelcase "^4.3.0"
+    long "^4.0.0"
+    protobufjs "^7.0.0"
     yargs "^16.2.0"
 
 "@humanwhocodes/config-array@^0.9.2":
@@ -2329,6 +2348,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.41.tgz#1607b2fd3da014ae5d4d1b31bc792a39348dfb9b"
   integrity sha512-xA6drNNeqb5YyV5fO3OAEsnXLfO7uF0whiOfPTz5AeDo8KeZFmODKnvwPymMNO8qE/an8pVY/O50tig2SQCrGw==
 
+"@types/node@18.6.3":
+  version "18.6.3"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.6.3.tgz#4e4a95b6fe44014563ceb514b2598b3e623d1c98"
+  integrity sha512-6qKpDtoaYLM+5+AFChLhHermMQxc3TOEFIDzrZLPRGHPrLEwqFkkT5Kx3ju05g6X7uDPazz3jHbKPX0KzCjntg==
+
 "@types/node@^10.0.3", "@types/node@^10.1.0":
   version "10.17.60"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.60.tgz#35f3d6213daed95da7f0f73e75bcc6980e90597b"
@@ -2992,6 +3016,13 @@ async@^2.6.0:
   dependencies:
     lodash "^4.17.14"
 
+asyncjs-util@1.2.10:
+  version "1.2.10"
+  resolved "https://registry.yarnpkg.com/asyncjs-util/-/asyncjs-util-1.2.10.tgz#bbfb4eab9b59af72040e021c75ccee3359c2bf6f"
+  integrity sha512-p4U6HQUw4k/xZKrwEQO7ZuF+8/OkzAQS4iAMhFUBGtSD8p3KkKBaTBuUTEH8TWKB3ArNbrP0401TGE2vIiU7uQ==
+  dependencies:
+    async "3.2.4"
+
 asyncjs-util@1.2.9:
   version "1.2.9"
   resolved "https://registry.yarnpkg.com/asyncjs-util/-/asyncjs-util-1.2.9.tgz#f64ffac188e6ff68608026a76cd1ef9698363307"
@@ -3278,6 +3309,20 @@ bitcoinjs-lib@6.0.1, bitcoinjs-lib@^6.0.1:
     bip174 "^2.0.1"
     bs58check "^2.1.2"
     create-hash "^1.1.0"
+    typeforce "^1.11.3"
+    varuint-bitcoin "^1.1.2"
+    wif "^2.0.1"
+
+bitcoinjs-lib@6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/bitcoinjs-lib/-/bitcoinjs-lib-6.0.2.tgz#0fdf6c41978d93641b936d66f4afce44bb9b7f35"
+  integrity sha512-I994pGt9cL5s5OA6mkv1e8IuYcsKN2ORXnWbkqAXLNGvEnOHBhKBSvCjFl7YC2uVoJnfr/iwq7JMrq575SYO5w==
+  dependencies:
+    bech32 "^2.0.0"
+    bip174 "^2.0.1"
+    bs58check "^2.1.2"
+    create-hash "^1.1.0"
+    ripemd160 "^2.0.2"
     typeforce "^1.11.3"
     varuint-bitcoin "^1.1.2"
     wif "^2.0.1"
@@ -6212,6 +6257,18 @@ invoices@2.0.7, invoices@^2.0.7:
     bolt09 "0.2.3"
     tiny-secp256k1 "2.2.1"
 
+invoices@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/invoices/-/invoices-2.1.0.tgz#f9f658b71f4c5288afd55b43b0efb4b01c500b30"
+  integrity sha512-BHuiGsGVwp1gPzbVYZ3EyPQcD+0+4ZC8ykSzSXiKYytNUxW7Ro6f8iVCVpRindhmn7QCZSjRcfSdlJSykr6U+A==
+  dependencies:
+    bech32 "2.0.0"
+    bitcoinjs-lib "6.0.1"
+    bn.js "5.2.1"
+    bolt07 "1.8.2"
+    bolt09 "0.2.3"
+    tiny-secp256k1 "2.2.1"
+
 ioredis-cache@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/ioredis-cache/-/ioredis-cache-1.4.1.tgz#578bd6f36b34efdf30b6550b1bb52df684eb5146"
@@ -7245,7 +7302,7 @@ liftup@~3.0.1:
     rechoir "^0.7.0"
     resolve "^1.19.0"
 
-lightning@5.16.3, lightning@^5.16.2:
+lightning@5.16.3:
   version "5.16.3"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-5.16.3.tgz#f3dc2319ef6cbc5c6a9c3d9c9a897592b23d1393"
   integrity sha512-ghban3KbqkbzahwIp4NAtuhc8xIurVcCXAd7tV6qGkFYKZAy9loIvFrhZqoWF4A4jnaKbRnJPCaxzJ8JwPl3EA==
@@ -7270,6 +7327,32 @@ lightning@5.16.3, lightning@^5.16.2:
     psbt "2.6.0"
     tiny-secp256k1 "2.2.1"
     type-fest "2.13.0"
+
+lightning@^5.16.6:
+  version "5.16.6"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-5.16.6.tgz#82074344d927ecd8529ee3606325ff1411a56fb3"
+  integrity sha512-WDlE2UzaDXuzOXm5/INUnvTMxWdJGOMYqqfLI/RUfwu7U0w3CLIBqT8PE20Y4elx8BTYwbG7HU4/etnj5hybvw==
+  dependencies:
+    "@grpc/grpc-js" "1.6.8"
+    "@grpc/proto-loader" "0.7.0"
+    "@types/express" "4.17.13"
+    "@types/node" "18.6.3"
+    "@types/request" "2.48.8"
+    "@types/ws" "8.5.3"
+    async "3.2.4"
+    asyncjs-util "1.2.10"
+    bitcoinjs-lib "6.0.2"
+    bn.js "5.2.1"
+    body-parser "1.20.0"
+    bolt07 "1.8.2"
+    bolt09 "0.2.3"
+    cbor "8.1.0"
+    ecpair "2.0.1"
+    express "4.18.1"
+    invoices "2.1.0"
+    psbt "2.7.1"
+    tiny-secp256k1 "2.2.1"
+    type-fest "2.18.0"
 
 limiter@^1.1.5:
   version "1.1.5"
@@ -7517,6 +7600,11 @@ long@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/long/-/long-4.0.0.tgz#9a7b71cfb7d361a194ea555241c92f7468d5bf28"
   integrity sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA==
+
+long@^5.0.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/long/-/long-5.2.0.tgz#2696dadf4b4da2ce3f6f6b89186085d94d52fd61"
+  integrity sha512-9RTUNjK60eJbx3uz+TEGF7fUr29ZDxR5QzXcyDpeSfeH28S9ycINflOgOlppit5U+4kNTe83KQnMEerw7GmE8w==
 
 loose-envify@^1.4.0:
   version "1.4.0"
@@ -8777,6 +8865,25 @@ protobufjs@6.11.3, protobufjs@^6.11.2, protobufjs@^6.11.3, protobufjs@^6.8.6:
     "@types/node" ">=13.7.0"
     long "^4.0.0"
 
+protobufjs@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-7.0.0.tgz#8c678e1351fd926178fce5a4213913e8d990974f"
+  integrity sha512-ffNIEm+quOcYtQvHdW406v1NQmZSuqVklxsXk076BtuFnlYZfigLU+JOMrTD8TUOyqHYbRI/fSVNvgd25YeN3w==
+  dependencies:
+    "@protobufjs/aspromise" "^1.1.2"
+    "@protobufjs/base64" "^1.1.2"
+    "@protobufjs/codegen" "^2.0.4"
+    "@protobufjs/eventemitter" "^1.1.0"
+    "@protobufjs/fetch" "^1.1.0"
+    "@protobufjs/float" "^1.0.2"
+    "@protobufjs/inquire" "^1.1.0"
+    "@protobufjs/path" "^1.1.2"
+    "@protobufjs/pool" "^1.1.0"
+    "@protobufjs/utf8" "^1.1.0"
+    "@types/long" "^4.0.1"
+    "@types/node" ">=13.7.0"
+    long "^5.0.0"
+
 proxy-addr@~2.0.7:
   version "2.0.7"
   resolved "https://registry.yarnpkg.com/proxy-addr/-/proxy-addr-2.0.7.tgz#f19fe69ceab311eeb94b42e70e8c2070f9ba1025"
@@ -8793,6 +8900,18 @@ psbt@2.6.0:
     bip66 "1.1.5"
     bitcoin-ops "1.4.1"
     bitcoinjs-lib "6.0.1"
+    bn.js "5.2.1"
+    pushdata-bitcoin "1.0.1"
+    varuint-bitcoin "1.1.2"
+
+psbt@2.7.1:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/psbt/-/psbt-2.7.1.tgz#7c41f558571ea378edec05ad2163e2ae38f83af7"
+  integrity sha512-qFnvwdQcDoQBHHi3jYVVX+W98CRTbyeQs3RlUdAIzdEVbwBHEcv1+xhVaEJHrYiF75n7L+i6roDmZHIXT6tDSQ==
+  dependencies:
+    bip66 "1.1.5"
+    bitcoin-ops "1.4.1"
+    bitcoinjs-lib "6.0.2"
     bn.js "5.2.1"
     pushdata-bitcoin "1.0.1"
     varuint-bitcoin "1.1.2"
@@ -9276,7 +9395,7 @@ rimraf@~2.4.0:
   dependencies:
     glob "^6.0.1"
 
-ripemd160@^2.0.0, ripemd160@^2.0.1:
+ripemd160@^2.0.0, ripemd160@^2.0.1, ripemd160@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/ripemd160/-/ripemd160-2.0.2.tgz#a1c1a6f624751577ba5d07914cbc92850585890c"
   integrity sha512-ii4iagi25WusVoiC4B4lq7pbXfAp3D9v5CwfkY33vffw2+pkDjY1D8GaN7spsxvCSx8dkPqOZCEZyfxcmJG2IA==
@@ -10371,6 +10490,11 @@ type-fest@2.13.0:
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.13.0.tgz#d1ecee38af29eb2e863b22299a3d68ef30d2abfb"
   integrity sha512-lPfAm42MxE4/456+QyIaaVBAwgpJb6xZ8PRu09utnhPdWwcyj9vgy6Sq0Z5yNbJ21EdxB5dRU/Qg8bsyAMtlcw==
+
+type-fest@2.18.0:
+  version "2.18.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.18.0.tgz#fdef3a74e0a9e68ebe46054836650fb91ac3881e"
+  integrity sha512-pRS+/yrW5TjPPHNOvxhbNZexr2bS63WjrMU8a+VzEBhUi9Tz1pZeD+vQz3ut0svZ46P+SRqMEPnJmk2XnvNzTw==
 
 type-fest@^0.20.2:
   version "0.20.2"
