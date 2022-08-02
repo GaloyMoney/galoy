@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'revert: no need to cargo install in unpack_deps()'
-      sha: 21f61dd069d26270a870c870e02ad9f841e95d00
+      commitTitle: 'fix: REPO_PATH initialization'
+      sha: 70728a1b62e43be803a337bfae5968b2324f7ea8
     path: .
   path: vendor
 kind: LockConfig
