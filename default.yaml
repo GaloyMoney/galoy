@@ -75,6 +75,7 @@ test_accounts:
 - ref: F
   phone: "+16505554333"
   code: "321321"
+  needUsdWallet: true
 - ref: "G"
   phone: "+16505554335"
   code: "321321"

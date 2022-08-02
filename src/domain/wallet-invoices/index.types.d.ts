@@ -68,6 +68,7 @@ type WIBWithAmount = {
 
 type WalletInvoice = {
   paymentHash: PaymentHash
+  secret: SecretPreImage
   selfGenerated: boolean
   pubkey: Pubkey
   usdAmount?: UsdPaymentAmount
@@ -108,11 +109,7 @@ interface IWalletInvoicesRepository {
     paymentHash: PaymentHash,
   ) => Promise<WalletInvoice | RepositoryError>
 
-  findPendingByWalletId: (
-    walletId: WalletId,
-  ) => AsyncGenerator<WalletInvoice> | RepositoryError
-
-  listWalletIdsWithPendingInvoices: () => AsyncGenerator<WalletId> | RepositoryError
+  yieldPending: () => AsyncGenerator<WalletInvoice> | RepositoryError
 
   deleteByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
 
