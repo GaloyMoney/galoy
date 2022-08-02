@@ -7,12 +7,15 @@ import {
   split,
   NormalizedCacheObject,
 } from "@apollo/client/core"
-import { WebSocketLink } from "@apollo/client/link/ws"
 import { getMainDefinition } from "@apollo/client/utilities"
 import fetch from "cross-fetch"
-import { SubscriptionClient } from "subscriptions-transport-ws"
-import ws from "ws"
 import { GALOY_API_PORT } from "@config"
+import { createClient } from "graphql-ws"
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions"
+import WebSocket from "ws"
+
+import { onError } from "@apollo/client/link/error"
+import { baseLogger } from "@services/logger"
 
 export const localIpAddress = "127.0.0.1" as IpAddress
 
@@ -51,15 +54,23 @@ export const createApolloClient = (
 
   const httpLink = new HttpLink({ uri: `http://localhost:${port}${graphqlPath}`, fetch })
 
-  const subscriptionClient = new SubscriptionClient(
-    `ws://localhost:${port}${graphqlSubscriptionPath}`,
-    {
-      connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
-    },
-    ws,
-  )
+  const subscriptionClient = createClient({
+    url: `ws://localhost:${port}${graphqlSubscriptionPath}`,
+    connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+    webSocketImpl: WebSocket,
+  })
 
-  const wsLink = new WebSocketLink(subscriptionClient)
+  const wsLink = new GraphQLWsLink(subscriptionClient)
+
+  const errorLink = onError(({ graphQLErrors, networkError }) => {
+    if (graphQLErrors)
+      graphQLErrors.forEach(({ message, locations, path }) =>
+        baseLogger.error(
+          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+        ),
+      )
+    if (networkError) baseLogger.error(`[Network error]: ${networkError}`)
+  })
 
   const splitLink = split(
     ({ query }) => {
@@ -70,7 +81,7 @@ export const createApolloClient = (
       )
     },
     wsLink,
-    from([authLink, httpLink]),
+    from([errorLink, authLink, httpLink]),
   )
 
   const apolloClient = new ApolloClient({
@@ -92,7 +103,7 @@ export const createApolloClient = (
   const disposeClient = () => {
     apolloClient.clearStore()
     apolloClient.stop()
-    subscriptionClient.close()
+    subscriptionClient.terminate()
   }
 
   return {

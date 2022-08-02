@@ -11,7 +11,7 @@ import { GALOY_ADMIN_PORT } from "@config"
 
 import { gqlAdminSchema } from "../graphql"
 
-import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
+import { isAuthenticated, isEditor, serverPath } from "./helper"
 
 dotenv.config()
 
@@ -42,7 +42,9 @@ export async function startApolloServerForAdminSchema() {
   )
 
   const schema = applyMiddleware(gqlAdminSchema, permissions)
-  return startApolloServer({ schema, port: GALOY_ADMIN_PORT, type: "admin" })
+
+  const { startApolloServer } = await import(serverPath)
+  return startApolloServer({ schema, port: GALOY_ADMIN_PORT })
 }
 
 if (require.main === module) {

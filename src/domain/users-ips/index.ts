@@ -1,8 +1,11 @@
-export const parseIps = (ips: undefined | string | string[]): IpAddress | undefined => {
+export const parseIps = (
+  ips: undefined | string | string[] | unknown,
+): IpAddress | undefined => {
   if (!ips) return undefined
 
   if (Array.isArray(ips) && ips.length) {
-    return toIpAddress(ips[0])
+    if (typeof ips[0] === "string") return toIpAddress(ips[0])
+    return undefined
   }
 
   if (typeof ips === "string") {
