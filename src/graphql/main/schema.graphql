@@ -895,6 +895,7 @@ type Subscription {
     input: LnInvoicePaymentStatusInput!
   ): LnInvoicePaymentStatusPayload!
   myUpdates: MyUpdatesPayload!
+  # how does myUpdates.update.Price differ from price?
   price(input: PriceInput!): PricePayload!
 }
 
