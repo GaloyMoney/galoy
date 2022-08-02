@@ -16,6 +16,24 @@ type Account {
   wallets: [Wallet!]!
 }
 
+type AccountCustomFields {
+  firstName: String!
+  lastName: String
+  onlyAdminField: Int
+}
+
+type AccountCustomFieldsPayload {
+  accountCustomFields: AccountCustomFields
+  errors: [Error!]!
+}
+
+input AccountCustomFieldsUpdateInput {
+  accountId: ID!
+  firstName: String!
+  lastName: String
+  onlyAdminField: Int
+}
+
 type AccountDetailPayload {
   accountDetails: Account
   errors: [Error!]!
@@ -219,6 +237,9 @@ Text field in a lightning payment transaction
 scalar Memo
 
 type Mutation {
+  accountCustomFieldsUpdate(
+    input: AccountCustomFieldsUpdateInput!
+  ): AccountCustomFieldsPayload!
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
   accountsAddUsdWallet(input: AccountsAddUsdWalletInput!): WalletDetailsPayload
