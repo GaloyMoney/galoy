@@ -257,7 +257,7 @@ const listenerHodlInvoice = ({
   subInvoice.on(
     "invoice_updated",
     async (invoice: SubscribeToInvoiceInvoiceUpdatedEvent) => {
-      if (invoice.is_confirmed === true) {
+      if (invoice.is_confirmed || invoice.is_canceled) {
         subInvoice.removeAllListeners()
       } else {
         await invoiceUpdateHandler(invoice)
