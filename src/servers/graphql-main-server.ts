@@ -36,7 +36,7 @@ export async function startApolloServerForCoreSchema() {
         userUpdateLanguage: isAuthenticated,
         userContactUpdateAlias: isAuthenticated,
 
-        accountDataUpdate: isAuthenticated,
+        accountCustomFieldsUpdate: isAuthenticated,
         accountUpdateDefaultWalletId: isAuthenticated,
 
         lnInvoiceFeeProbe: isAuthenticated,

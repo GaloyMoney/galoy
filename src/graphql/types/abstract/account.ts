@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 import { connectionArgs } from "graphql-relay"
 
 import { TransactionConnection } from "../object/transaction"
-import AccountData from "../object/account-data"
+import AccountCustomFields from "../object/account-custom-fields"
 
 import WalletId from "../scalar/wallet-id"
 
@@ -39,7 +39,7 @@ const IAccount = GT.Interface({
     },
 
     data: {
-      type: AccountData,
+      type: AccountCustomFields,
     },
 
     // FUTURE-PLAN: Support a `users: [User!]!` field here

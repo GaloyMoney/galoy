@@ -12,7 +12,7 @@ import { PaymentFlowState } from "@services/payment-flow/schema"
 
 import { baseLogger } from "../logger"
 import {
-  AccountData,
+  AccountCustomFields,
   DbMetadata,
   PhoneCode,
   User,
@@ -82,7 +82,7 @@ export const setupMongoConnection = async (syncIndexes = false) => {
   try {
     mongoose.set("runValidators", true)
     if (syncIndexes) {
-      await AccountData.syncIndexes()
+      await AccountCustomFields.syncIndexes()
       await DbMetadata.syncIndexes()
       await LnPayment.syncIndexes()
       await Medici.syncIndexes()

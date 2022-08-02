@@ -1,5 +1,5 @@
 export * from "./accounts"
-export * from "./account-data"
+export * from "./account-custom-fields"
 export * from "./ln-payments"
 export * from "./rewards"
 export * from "./users"

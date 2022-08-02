@@ -128,8 +128,10 @@ interface UserRecord {
   save: () => Promise<UserRecord>
 }
 
-interface AccountDataRecord {
+interface AccountCustomFieldsRecord {
   _id: ObjectId
-  transactionsCallback: string
+  accountId: ObjectId
+  modifiedByUserId: ObjectId
+  createdAt: Date
   customFields: { [k: string]: string | number | boolean }
 }

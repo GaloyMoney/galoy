@@ -1,6 +1,6 @@
 interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
-  data: AccountData
+  data: AccountCustomFields
   defaultWalletId: WalletId!
   id: ID!
   transactions(
@@ -28,25 +28,19 @@ interface Account {
   wallets: [Wallet!]!
 }
 
-type AccountData {
+type AccountCustomFields {
   firstName: String!
   lastName: String
-  otherField: Int
-  otherField2: Boolean
-  transactionsCallback: String
 }
 
-type AccountDataPayload {
-  accountData: AccountData
+type AccountCustomFieldsPayload {
+  accountCustomFields: AccountCustomFields
   errors: [Error!]!
 }
 
-input AccountDataUpdateInput {
+input AccountCustomFieldsUpdateInput {
   firstName: String!
   lastName: String
-  otherField: Int
-  otherField2: Boolean
-  transactionsCallback: String
 }
 
 input AccountUpdateDefaultWalletIdInput {
@@ -151,7 +145,7 @@ type ConsumerAccount implements Account {
   """
   Additional account information
   """
-  data: AccountData
+  data: AccountCustomFields
   defaultWalletId: WalletId!
   id: ID!
 
@@ -556,7 +550,9 @@ type MobileVersions {
 }
 
 type Mutation {
-  accountDataUpdate(input: AccountDataUpdateInput!): AccountDataPayload!
+  accountCustomFieldsUpdate(
+    input: AccountCustomFieldsUpdateInput!
+  ): AccountCustomFieldsPayload!
   accountUpdateDefaultWalletId(
     input: AccountUpdateDefaultWalletIdInput!
   ): AccountUpdateDefaultWalletIdPayload!

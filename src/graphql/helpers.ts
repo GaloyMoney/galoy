@@ -35,12 +35,16 @@ export const validateIsUsdWalletForMutation = async (
   return true
 }
 
-export const parseCustomFieldsSchema = <TSource, TContext>(
-  fields: CustomField[],
-): ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> => {
+export const parseCustomFieldsSchema = <TSource, TContext>({
+  fields,
+  onlyEditable = false,
+}: {
+  fields: CustomField[]
+  onlyEditable?: boolean
+}): ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> => {
   const result: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> = {}
   for (const field of fields) {
-    if (result[field.name]) continue
+    if (result[field.name] || (onlyEditable && !field.editable)) continue
     const type = getGT(field.type)
     result[field.name] = {
       type: field.required ? GT.NonNull(type) : type,

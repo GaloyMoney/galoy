@@ -13,20 +13,27 @@ jest.mock("@config", () => {
 
 describe("parseCustomFieldsSchema", () => {
   it("returns empty fields with an empty schema", () => {
-    const result = parseCustomFieldsSchema([])
+    const result = parseCustomFieldsSchema({ fields: [] })
+    expect(result).toEqual({})
+  })
+
+  it("returns empty with onlyEditable for non editable schema", () => {
+    const customEditableFields = customFieldsInfo.filter((s) => !s.schema.editable)
+    const schema = customEditableFields.map((s) => s.schema)
+    const result = parseCustomFieldsSchema({ fields: schema, onlyEditable: true })
     expect(result).toEqual({})
   })
 
   it("returns default type as string", () => {
     const info = { name: "fieldName" }
-    const result = parseCustomFieldsSchema([info])
+    const result = parseCustomFieldsSchema({ fields: [info] })
     expect(result).toEqual(expect.objectContaining({ fieldName: { type: GT.String } }))
   })
 
   test.each(customFieldsInfo.filter((s) => s.schema.required))(
     "returns non-null $schema.type schema field",
     ({ schema, field }) => {
-      const result = parseCustomFieldsSchema([schema])
+      const result = parseCustomFieldsSchema({ fields: [schema] })
       expect(result).toEqual(expect.objectContaining(field))
     },
   )
@@ -34,7 +41,7 @@ describe("parseCustomFieldsSchema", () => {
   test.each(customFieldsInfo.filter((s) => !s.schema.required))(
     "returns null $schema.type schema field",
     ({ schema, field }) => {
-      const result = parseCustomFieldsSchema([schema])
+      const result = parseCustomFieldsSchema({ fields: [schema] })
       expect(result).toEqual(expect.objectContaining(field))
     },
   )
@@ -42,16 +49,25 @@ describe("parseCustomFieldsSchema", () => {
   it("returns multiple fields", () => {
     const schema = customFieldsInfo.map((s) => s.schema)
     const fields = Object.assign({}, ...customFieldsInfo.map((s) => s.field))
-    const result = parseCustomFieldsSchema(schema)
-    expect(Object.keys(result as object).length).toEqual(schema.length)
+    const result = parseCustomFieldsSchema({ fields: schema })
+    expect(Object.keys(result as object).length).toEqual(Object.keys(fields).length)
+    expect(result).toEqual(expect.objectContaining(fields))
+  })
+
+  it("returns multiple editable fields", () => {
+    const customEditableFields = customFieldsInfo.filter((s) => !!s.schema.editable)
+    const schema = customFieldsInfo.map((s) => s.schema)
+    const fields = Object.assign({}, ...customEditableFields.map((s) => s.field))
+    const result = parseCustomFieldsSchema({ fields: schema, onlyEditable: true })
+    expect(Object.keys(result as object).length).toEqual(Object.keys(fields).length)
     expect(result).toEqual(expect.objectContaining(fields))
   })
 
   it("removes duplicated fields", () => {
     const schema = customFieldsInfo.map((s) => s.schema)
     const fields = Object.assign({}, ...customFieldsInfo.map((s) => s.field))
-    const result = parseCustomFieldsSchema([...schema, ...schema.slice()])
-    expect(Object.keys(result as object).length).toEqual(schema.length)
+    const result = parseCustomFieldsSchema({ fields: [...schema, ...schema.slice()] })
+    expect(Object.keys(result as object).length).toEqual(Object.keys(fields).length)
     expect(result).toEqual(expect.objectContaining(fields))
   })
 })

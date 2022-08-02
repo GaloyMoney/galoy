@@ -15,6 +15,14 @@ export const customFieldsInfo = [
   },
   {
     schema: {
+      name: "fieldNameEditableString",
+      type: "string",
+      editable: true,
+    } as CustomField,
+    field: { fieldNameEditableString: { type: GT.String } },
+  },
+  {
+    schema: {
       name: "fieldNameNonNullInt",
       type: "integer",
       required: true,
@@ -24,6 +32,14 @@ export const customFieldsInfo = [
   {
     schema: { name: "fieldNameInt", type: "integer", required: false } as CustomField,
     field: { fieldNameInt: { type: GT.Int } },
+  },
+  {
+    schema: {
+      name: "fieldNameEditableInt",
+      type: "integer",
+      editable: true,
+    } as CustomField,
+    field: { fieldNameEditableInt: { type: GT.Int } },
   },
   {
     schema: {
@@ -39,6 +55,14 @@ export const customFieldsInfo = [
   },
   {
     schema: {
+      name: "fieldNameEditableFloat",
+      type: "float",
+      editable: true,
+    } as CustomField,
+    field: { fieldNameEditableFloat: { type: GT.Float } },
+  },
+  {
+    schema: {
       name: "fieldNameNonNullBoolean",
       type: "boolean",
       required: true,
@@ -48,5 +72,13 @@ export const customFieldsInfo = [
   {
     schema: { name: "fieldNameBoolean", type: "boolean", required: false } as CustomField,
     field: { fieldNameBoolean: { type: GT.Boolean } },
+  },
+  {
+    schema: {
+      name: "fieldNameEditableBoolean",
+      type: "boolean",
+      editable: true,
+    } as CustomField,
+    field: { fieldNameEditableBoolean: { type: GT.Boolean } },
   },
 ]

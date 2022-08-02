@@ -346,26 +346,27 @@ const PhoneCodeSchema = new Schema({
 
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
 
-const AccountDataSchema = new Schema<AccountDataRecord>(
-  {
-    transactionsCallback: {
-      type: String,
-      default: "",
-    },
-    customFields: Schema.Types.Mixed,
+const AccountCustomFieldsSchema = new Schema<AccountCustomFieldsRecord>({
+  accountId: Schema.Types.ObjectId,
+  customFields: Schema.Types.Mixed,
+  modifiedByUserId: Schema.Types.ObjectId,
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  { id: false },
-)
+})
+
+AccountCustomFieldsSchema.index({ accountId: 1, createdAt: -1 })
 
 const customFieldsIndexes = getAccountsConfig()
   .customFields.filter((cf) => !!cf.index)
   .map((cf) => ({ [`customFields.${cf.name}`]: 1 as IndexDirection }))
 
 for (const index of customFieldsIndexes) {
-  AccountDataSchema.index(index)
+  AccountCustomFieldsSchema.index(index)
 }
 
-export const AccountData = mongoose.model<AccountDataRecord>(
-  "AccountData",
-  AccountDataSchema,
+export const AccountCustomFields = mongoose.model<AccountCustomFieldsRecord>(
+  "AccountCustomFields",
+  AccountCustomFieldsSchema,
 )

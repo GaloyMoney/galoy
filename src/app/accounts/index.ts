@@ -1,8 +1,8 @@
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
-export * from "./get-account-data"
+export * from "./get-account-custom-fields"
 export * from "./get-account-transactions-for-contact"
-export * from "./update-account-data"
+export * from "./update-account-custom-fields"
 export * from "./update-account-level"
 export * from "./update-account-status"
 export * from "./update-business-map-info"
