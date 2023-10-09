@@ -98,7 +98,7 @@ export const PriceService = (): IPriceService => {
         currency: displayCurrency,
       }
     } catch (err) {
-      baseLogger.error({ err }, "impossible to fetch most recent price")
+      baseLogger.warn({ err }, "impossible to fetch most recent price")
       return new UnknownPriceServiceError(err)
     }
   }

@@ -24,7 +24,13 @@ import { briaEventHandler } from "./event-handlers/bria"
 
 import healthzHandler from "./middlewares/healthz"
 
-import { getSwapConfig, NETWORK, ONCHAIN_MIN_CONFIRMATIONS, TRIGGER_PORT } from "@/config"
+import {
+  getSwapConfig,
+  NETWORK,
+  ONCHAIN_MIN_CONFIRMATIONS,
+  TRIGGER_PORT,
+  UNSECURE_PRICE_CACHE,
+} from "@/config"
 
 import {
   Payments,
@@ -36,13 +42,13 @@ import { uploadBackup } from "@/app/admin/backup"
 import { lnd1LoopConfig, lnd2LoopConfig } from "@/app/swap/get-active-loopd"
 import * as Wallets from "@/app/wallets"
 
+import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 import { TxDecoder } from "@/domain/bitcoin/onchain"
 import { CacheKeys } from "@/domain/cache"
 import { CouldNotFindWalletFromOnChainAddressError } from "@/domain/errors"
-import { SwapTriggerError } from "@/domain/swap/errors"
 import { checkedToDisplayCurrency } from "@/domain/fiat"
-import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
+import { SwapTriggerError } from "@/domain/swap/errors"
 import { WalletInvoiceChecker } from "@/domain/wallet-invoices"
 
 import { BriaSubscriber } from "@/services/bria"
@@ -57,6 +63,7 @@ import { setupMongoConnection } from "@/services/mongodb"
 import { WalletInvoicesRepository } from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
+import { seedPriceCache } from "@/app/bootstrap/price-cache"
 
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
@@ -512,6 +519,7 @@ const healthCheck = () => {
 // only execute if it is the main module
 if (require.main === module) {
   healthCheck()
+  UNSECURE_PRICE_CACHE && seedPriceCache()
   setupMongoConnection()
     .then(main)
     .catch((err) => logger.error(err))

@@ -1,12 +1,20 @@
 import { randomUUID } from "crypto"
 
+import { seedPriceCache } from "./price-cache"
+
 import { createAccountWithPhoneIdentifier } from "@/app/accounts"
 
-import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
+import {
+  ConfigError,
+  UNSECURE_PRICE_CACHE,
+  getAdminAccounts,
+  getDefaultAccountsConfig,
+} from "@/config"
 
 import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@/domain/errors"
 import { WalletCurrency } from "@/domain/shared"
 
+import { initialStaticAccountIds } from "@/services/ledger/facade"
 import {
   AccountsRepository,
   UsersRepository,
@@ -14,7 +22,6 @@ import {
 } from "@/services/mongoose"
 import { Account } from "@/services/mongoose/schema"
 import { toObjectId } from "@/services/mongoose/utils"
-import { initialStaticAccountIds } from "@/services/ledger/facade"
 
 export const randomUserId = () => randomUUID() as UserId
 
@@ -85,5 +92,7 @@ export const bootstrap = async () => {
     if (wallet.currency !== WalletCurrency.Btc) {
       return new Error("Expected BTC-currency default wallet")
     }
+
+    UNSECURE_PRICE_CACHE && (await seedPriceCache())
   }
 }

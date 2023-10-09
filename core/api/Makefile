@@ -145,6 +145,7 @@ mine-block:
 lncli-1:
 	docker exec -it $$(docker ps -q -f status=running -f name="lnd1-1") /bin/sh -c 'lncli -n regtest ${command}'
 
+# to create an onchain address: make lncli-outside-1 command="newaddress p2wkh"
 # to pay an invoice: make lncli-outside-1 command="payinvoice lnbcrt1... --amt=100 -f"
 lncli-outside-1:
 	docker exec -it $$(docker ps -q -f status=running -f name="lnd-outside-1-1") /bin/sh -c 'lncli -n regtest ${command}'
