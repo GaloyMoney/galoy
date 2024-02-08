@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: allow public or private repo selection (#34)'
-      sha: 53fc9dd805d3574d200e8e6e99f856c0912b52a8
+      commitTitle: 'fix: allow versioned img uploading to private repo (#41)'
+      sha: 0f5b967c838dbb9496da86453c0eece933a556a9
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'feat: allow public or private repo selection (#34)'
-      sha: 53fc9dd805d3574d200e8e6e99f856c0912b52a8
+      commitTitle: 'fix: allow versioned img uploading to private repo (#41)'
+      sha: 0f5b967c838dbb9496da86453c0eece933a556a9
     path: .
   path: ./vendor
 kind: LockConfig

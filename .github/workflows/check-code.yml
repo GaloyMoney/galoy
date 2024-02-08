@@ -1,0 +1,22 @@
+#! Auto synced from Shared CI Resources repository
+#! Don't change this file, instead change it in github.com/GaloyMoney/concourse-shared
+
+name: Check Code
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-code:
+    name: Check Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "yarn"
+      - run: yarn install --frozen-lockfile
+      - name: Run check code
+        run: make check-code
