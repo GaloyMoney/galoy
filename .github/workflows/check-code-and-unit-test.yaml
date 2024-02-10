@@ -23,6 +23,7 @@ jobs:
         id: prepare_args
         run: |
           ARGS=""
+          BUILD_ARGS=""
 
           cat <<EOF > labels.json
           ${{ toJSON(github.event.pull_request.labels.*.name) }}
@@ -40,21 +41,26 @@ jobs:
             case "$LABEL" in
               dashboard|consent|pay|admin-panel|map)
                 ARGS+=" //apps/$LABEL:test"
+                BUILD_ARGS+=" //apps/$LABEL:node_modules"
                 ;;
               core)
                 ARGS+=" //core/api:test"
+                BUILD_ARGS+=" //core/api:prod_build"
                 ;;
               api-keys|notifications)
                 ARGS+=" //core/$LABEL:$LABEL"
+                BUILD_ARGS+=" //core/$LABEL:$LABEL"
                 ;;
             esac
           done
 
           echo "Prepared args: $ARGS"
+          echo "Prepared build_args: $BUILD_ARGS"
           echo "args=$ARGS" >> "$GITHUB_OUTPUT"
+          echo "build_args=$BUILD_ARGS" >> "$GITHUB_OUTPUT"
       - name: Build via buck2
         if: steps.prepare_args.outputs.args != ''
-        run: nix develop -c buck2 build ${{ steps.prepare_args.outputs.args }}
+        run: nix develop -c buck2 build ${{ steps.prepare_args.outputs.build_args }}
       - name: Run checks and tests via buck2
         if: steps.prepare_args.outputs.args != ''
         run: nix develop -c buck2 test ${{ steps.prepare_args.outputs.args }}

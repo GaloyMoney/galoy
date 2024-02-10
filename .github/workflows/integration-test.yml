@@ -46,14 +46,13 @@ jobs:
           echo "Prepared args: $ARGS"
           echo "args=$ARGS" >> "$GITHUB_OUTPUT"
       - name: Build/start deps and run tests via tilt
-        id: tilt_test
         if: steps.prepare_args.outputs.args != ''
         run: nix develop -c xvfb-run ./dev/bin/tilt-ci.sh ${{ steps.prepare_args.outputs.args }}
       - name: Rename Tilt log
-        if: steps.tilt_test.outcome == 'success' || steps.tilt_test.outcome == 'failure'
+        if: always()
         run: mv dev/.e2e-tilt.log dev/e2e-tilt.log
       - name: Upload Tilt log
-        if: steps.tilt_test.outcome == 'success' || steps.tilt_test.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: Tilt log

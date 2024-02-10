@@ -2,24 +2,9 @@ config.define_string_list("test")
 config.define_bool("bats")
 cfg = config.parse()
 
-CORE_TEST_LABEL = "core"
-CONSENT_TEST_LABEL = "consent"
-DASHBOARD_TEST_LABEL = "dashboard"
-PAY_TEST_LABEL = "pay"
-ADMIN_PANEL_TEST_LABEL = "admin-panel"
-MAP_TEST_LABEL = "map"
-
-TEST_RESOURCES = {
-   CORE_TEST_LABEL: "test-api",
-   CONSENT_TEST_LABEL: "test-consent",
-   DASHBOARD_TEST_LABEL: "test-dashboard",
-   PAY_TEST_LABEL: "test-pay",
-   ADMIN_PANEL_TEST_LABEL: "test-admin-panel",
-   MAP_TEST_LABEL: "test-map"
-}
-
 is_ci=("ci" in sys.argv) or cfg.get("bats", False)
 run_apps=not cfg.get("bats", False)
+
 
 # From the Tilt docs:
 #
@@ -34,6 +19,11 @@ run_apps=not cfg.get("bats", False)
 # - https://docs.tilt.dev/api.html#api.allow_k8s_contexts
 allow_k8s_contexts(k8s_context())
 
+
+# BUCK2 FILE DEPENDENCIES
+# ---
+# Needed for file monitoring to re-trigger Tilt-monitored resources
+
 def _buck2_dep_inputs(target):
     cmd = [
         "buck2",
@@ -44,114 +34,9 @@ def _buck2_dep_inputs(target):
 
     return file_paths
 
-dashboard_target = "//apps/dashboard:dev"
-if is_ci:
-  dashboard_target = '//apps/dashboard:dashboard'
-local_resource(
-    "dashboard",
-    labels = ["apps"],
-    cmd = "buck2 build {}".format(dashboard_target),
-    serve_cmd = ". .envs/dashboard.env && buck2 run {}".format(dashboard_target),
-    serve_env = {
-      "NEXTAUTH_URL": "http://localhost:3001",
-      "NEXTAUTH_SECRET": "secret",
-      "PORT": "3001",
-    },
-    deps = _buck2_dep_inputs(dashboard_target),
-    allow_parallel = True,
-    auto_init = run_apps,
-    resource_deps = [
-        "hydra-dashboard",
-        "api-keys",
-        "svix",
-        "svix-pg",
-        "add-test-users-with-usernames",
-        "fund-user",
-        "notifications",
-    ],
-    links = [
-        link("http://localhost:3001", "dashboard"),
-    ],
-)
 
-pay_target = "//apps/pay:dev"
-if is_ci:
-  pay_target = '//apps/pay:pay-ci'
-pay_env = {
-  "PORT": "3002",
-  "CORE_GQL_URL_INTRANET": "http://localhost:4455/graphql",
-  "NEXT_PUBLIC_CORE_GQL_URL": "http://localhost:4455/graphql",
-  "NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL": "ws://localhost:4455/graphqlws",
-  "NEXT_PUBLIC_PAY_DOMAIN": "localhost:3002",
-}
-local_resource(
-    "pay",
-    labels = ["apps"],
-    cmd = "buck2 build {}".format(pay_target),
-    serve_cmd = "buck2 run {}".format(pay_target),
-    env = pay_env,
-    serve_env = pay_env,
-    deps = _buck2_dep_inputs(pay_target),
-    allow_parallel = True,
-    resource_deps = [
-        "api",
-    ],
-    links = [
-        link("http://localhost:3002", "pay"),
-    ],
-)
-
-admin_panel_target = "//apps/admin-panel:dev"
-if is_ci:
-  admin_panel_target = '//apps/admin-panel:admin-panel'
-admin_panel_env = {
-    "PORT": "3004",
-    "ADMIN_CORE_API" : "http://localhost:4455/admin/graphql",
-    "NEXTAUTH_URL" : "http://localhost:3004",
-    "NEXTAUTH_SECRET" : "nextAuthSecret",
-}
-local_resource(
-    "admin-panel",
-    labels = ["apps"],
-    cmd = "buck2 build {}".format(admin_panel_target),
-    serve_cmd = "buck2 run {}".format(admin_panel_target),
-    env = admin_panel_env,
-    serve_env = admin_panel_env,
-    deps = _buck2_dep_inputs(admin_panel_target),
-    allow_parallel = True,
-    resource_deps = [
-        "api",
-        "apollo-router",
-    ],
-    links = [
-        link("http://localhost:3004", "admin-panel"),
-    ],
-)
-
-map_target = "//apps/map:dev"
-if is_ci:
-  map_target = '//apps/map:map'
-map_env = {
-    "PORT": "3005",
-    "CORE_URL" : "http://localhost:4455/graphql",
-}
-local_resource(
-    "map",
-    labels = ["apps"],
-    cmd = "buck2 build {}".format(map_target),
-    serve_cmd = "buck2 run {}".format(map_target),
-    env = map_env,
-    serve_env = map_env,
-    deps = _buck2_dep_inputs(map_target),
-    allow_parallel = True,
-    resource_deps = [
-        "api",
-        "apollo-router",
-    ],
-    links = [
-        link("http://localhost:3005", "map"),
-    ],
-)
+# INITIALIZATION TASKS
+# ---
 
 local_resource(
   name='hydra-dashboard',
@@ -171,131 +56,6 @@ local_resource(
     "hydra",
     "api",
   ]
-)
-
-consent_test_target = "//apps/consent:test-integration"
-local_resource(
-  "test-consent",
-  labels = ["test"],
-  auto_init = is_ci and CONSENT_TEST_LABEL in cfg.get("test", []),
-  cmd = "buck2 test {}".format(consent_test_target),
-  allow_parallel = True,
-  resource_deps = [
-    "consent",
-    "init-test-user",
-  ],
-)
-
-dashboard_test_target = "//apps/dashboard:test-integration"
-local_resource(
-  "test-dashboard",
-  labels = ["test"],
-  auto_init = is_ci and DASHBOARD_TEST_LABEL in cfg.get("test", []),
-  cmd = "buck2 test {}".format(dashboard_test_target),
-  resource_deps = [
-    "consent",
-    "dashboard",
-    "init-test-user",
-  ],
-)
-
-pay_test_target = "//apps/pay:test-integration"
-local_resource(
-  "test-pay",
-  labels = ["test"],
-  auto_init = is_ci and PAY_TEST_LABEL in cfg.get("test", []),
-  cmd = "buck2 test {}".format(pay_test_target),
-  resource_deps = [
-    "api",
-    "pay",
-    "add-test-users-with-usernames",
-  ],
-)
-
-admin_panel_test_target = "//apps/admin-panel:test-integration"
-local_resource(
-  "test-admin-panel",
-  labels = ["test"],
-  auto_init = is_ci and ADMIN_PANEL_TEST_LABEL in cfg.get("test", []),
-  cmd = "buck2 test {}".format(admin_panel_test_target),
-  resource_deps = [
-    "admin-panel",
-  ],
-)
-
-map_test_target = "//apps/map:test-integration"
-local_resource(
-  "test-map",
-  labels = ["test"],
-  auto_init = is_ci and MAP_TEST_LABEL in cfg.get("test", []),
-  cmd = "buck2 test {}".format(map_test_target),
-  resource_deps = [
-    "map",
-  ],
-)
-
-local_resource(
-  name='init-test-user',
-  labels = ['test'],
-  cmd='buck2 run //dev:init-user',
-  allow_parallel = True,
-  resource_deps = [
-    "oathkeeper",
-    "kratos",
-    "api",
-  ]
-)
-
-local_resource(
-  name='add-test-users-with-usernames',
-  labels = ['test'],
-  cmd='buck2 run //dev:add-test-users-with-usernames',
-  allow_parallel = True,
-  resource_deps = [
-    "oathkeeper",
-    "kratos",
-    "api",
-  ]
-)
-
-local_resource(
-  name='fund-user',
-  labels = ['test'],
-  cmd='buck2 run //dev:fund-user',
-  allow_parallel = True,
-  resource_deps = [
-    "oathkeeper",
-    "kratos",
-    "api",
-    "init-onchain",
-    "init-test-user",
-    "api-trigger",
-    "stablesats",
-    "price",
-  ]
-)
-
-
-consent_target = "//apps/consent:dev"
-if is_ci:
-  consent_target = '//apps/consent:consent'
-local_resource(
-    "consent",
-    labels = ["auth"],
-    cmd = "buck2 build {}".format(consent_target),
-    serve_cmd = "buck2 run {}".format(consent_target),
-    deps = _buck2_dep_inputs(consent_target),
-    allow_parallel = True,
-    auto_init = run_apps,
-    resource_deps = [
-        "hydra-consent",
-        "apollo-router",
-        "hydra",
-        "api",
-    ],
-    links = [
-        link("http://localhost:3000", "consent"),
-    ],
 )
 
 local_resource(
@@ -318,53 +78,33 @@ local_resource(
   ]
 )
 
-core_serve_env = {
-  "HELMREVISION": "dev",
-  "NETWORK": "regtest",
-  "OATHKEEPER_DECISION_ENDPOINT": "http://localhost:4456",
-  "TWILIO_ACCOUNT_SID": "AC_twilio_id",
-  "TWILIO_AUTH_TOKEN": "AC_twilio_auth_token",
-  "TWILIO_VERIFY_SERVICE_ID": "VA_twilio_service",
-  "KRATOS_PG_CON": "postgres://dbuser:secret@localhost:5432/default?sslmode=disable",
-  "KRATOS_PUBLIC_API": "http://localhost:4433",
-  "KRATOS_ADMIN_API": "http://localhost:4434",
-  "KRATOS_MASTER_USER_PASSWORD": "passwordHardtoFindWithNumber123",
-  "PRICE_HOST": "localhost",
-  "PRICE_HISTORY_HOST": "localhost",
-  "BRIA_HOST": "localhost",
-  "BRIA_API_KEY": "bria_dev_000000000000000000000",
-  "NOTIFICATIONS_HOST": "localhost",
-  "MONGODB_CON": "mongodb://localhost:27017/galoy",
-  "REDIS_MASTER_NAME": "mymaster",
-  "REDIS_PASSWORD": "",
-  "REDIS_0_DNS": "localhost",
-  "REDIS_0_PORT": "6379",
-  "REDIS_TYPE": "standalone",
-  "UNSECURE_IP_FROM_REQUEST_OBJECT": "true",
-  "UNSECURE_DEFAULT_LOGIN_CODE": "000000",
-  "GEETEST_ID": "geetest_id",
-  "GEETEST_KEY": "geetest_key",
+local_resource(
+  name='init-onchain',
+  labels = ['bitcoin'],
+  cmd='buck2 run //dev:init-onchain',
+  allow_parallel = True,
+  resource_deps = [
+    "bitcoind",
+    "bria",
+  ]
+)
 
-  "LND1_TLS": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=",
-  "LND1_MACAROON": "AgEDbG5kAvgBAwoQB1FdhGa9xoewc1LEXmnURRIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgqHDdwGCqx0aQL1/Z3uUfzCpeBhfapGf9s/AZPOVwf6s=",
-  "LND1_PUBKEY":"03ca1907342d5d37744cb7038375e1867c24a87564c293157c95b2a9d38dcfb4c2",
-  "LND1_DNS": "localhost",
-  "LND1_RPCPORT": "10009",
-  "LND1_NAME": "lnd1",
-  "LND1_TYPE": "offchain,onchain",
+local_resource(
+  name='init-lightning',
+  labels = ['bitcoin'],
+  cmd='buck2 run //dev:init-lightning',
+  allow_parallel = True,
+  resource_deps = [
+    "init-onchain",
+    "lnd1",
+    "lnd-outside-1",
+    "lnd-outside-2",
+  ]
+)
 
-  "LND2_TLS": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=",
-  "LND2_MACAROON": "AgEDbG5kAvgBAwoQX0BxfhQTxLTiqaceBnGnfBIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgMAKlr1HehfBpn2R5RPE2IuY9r/18QBeLZxYgRidpos4=",
-  "LND2_PUBKEY": "039341ef13e776dc1611502cf510110d9ac5cdc252141f5997adcfd72cef34c3a7",
-  "LND2_DNS": "localhost",
-  "LND2_RPCPORT": "10010",
-  "LND2_NAME": "lnd2",
-  "LND2_TYPE": "offchain",
 
-  "SVIX_SECRET": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTE2NzIwMTQsImV4cCI6MjAwNzAzMjAxNCwibmJmIjoxNjkxNjcyMDE0LCJpc3MiOiJzdml4LXNlcnZlciIsInN1YiI6Im9yZ18yM3JiOFlkR3FNVDBxSXpwZ0d3ZFhmSGlyTXUifQ.b9s0aWSisNdUNki4edabBEToLNSwjC9-AiJQr4J3y4E",
-  "SVIX_ENDPOINT": "http://localhost:8071",
-  "EXPORTER_PORT": "3003"
-}
+# SERVE DEPENDENCIES
+# ---
 
 callback_target = "//bats/helpers/callback:run"
 local_resource(
@@ -375,6 +115,58 @@ local_resource(
     deps = _buck2_dep_inputs(callback_target),
 )
 
+
+# SERVE RESOURCES
+# ---
+
+core_serve_env = {
+    "HELMREVISION": "dev",
+    "NETWORK": "regtest",
+    "OATHKEEPER_DECISION_ENDPOINT": "http://localhost:4456",
+    "TWILIO_ACCOUNT_SID": "AC_twilio_id",
+    "TWILIO_AUTH_TOKEN": "AC_twilio_auth_token",
+    "TWILIO_VERIFY_SERVICE_ID": "VA_twilio_service",
+    "KRATOS_PG_CON": "postgres://dbuser:secret@localhost:5432/default?sslmode=disable",
+    "KRATOS_PUBLIC_API": "http://localhost:4433",
+    "KRATOS_ADMIN_API": "http://localhost:4434",
+    "KRATOS_MASTER_USER_PASSWORD": "passwordHardtoFindWithNumber123",
+    "PRICE_HOST": "localhost",
+    "PRICE_HISTORY_HOST": "localhost",
+    "BRIA_HOST": "localhost",
+    "BRIA_API_KEY": "bria_dev_000000000000000000000",
+    "NOTIFICATIONS_HOST": "localhost",
+    "MONGODB_CON": "mongodb://localhost:27017/galoy",
+    "REDIS_MASTER_NAME": "mymaster",
+    "REDIS_PASSWORD": "",
+    "REDIS_0_DNS": "localhost",
+    "REDIS_0_PORT": "6379",
+    "REDIS_TYPE": "standalone",
+    "UNSECURE_IP_FROM_REQUEST_OBJECT": "true",
+    "UNSECURE_DEFAULT_LOGIN_CODE": "000000",
+    "GEETEST_ID": "geetest_id",
+    "GEETEST_KEY": "geetest_key",
+  
+    "LND1_TLS": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=",
+    "LND1_MACAROON": "AgEDbG5kAvgBAwoQB1FdhGa9xoewc1LEXmnURRIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgqHDdwGCqx0aQL1/Z3uUfzCpeBhfapGf9s/AZPOVwf6s=",
+    "LND1_PUBKEY":"03ca1907342d5d37744cb7038375e1867c24a87564c293157c95b2a9d38dcfb4c2",
+    "LND1_DNS": "localhost",
+    "LND1_RPCPORT": "10009",
+    "LND1_NAME": "lnd1",
+    "LND1_TYPE": "offchain,onchain",
+  
+    "LND2_TLS": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=",
+    "LND2_MACAROON": "AgEDbG5kAvgBAwoQX0BxfhQTxLTiqaceBnGnfBIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgMAKlr1HehfBpn2R5RPE2IuY9r/18QBeLZxYgRidpos4=",
+    "LND2_PUBKEY": "039341ef13e776dc1611502cf510110d9ac5cdc252141f5997adcfd72cef34c3a7",
+    "LND2_DNS": "localhost",
+    "LND2_RPCPORT": "10010",
+    "LND2_NAME": "lnd2",
+    "LND2_TYPE": "offchain",
+  
+    "SVIX_SECRET": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTE2NzIwMTQsImV4cCI6MjAwNzAzMjAxNCwibmJmIjoxNjkxNjcyMDE0LCJpc3MiOiJzdml4LXNlcnZlciIsInN1YiI6Im9yZ18yM3JiOFlkR3FNVDBxSXpwZ0d3ZFhmSGlyTXUifQ.b9s0aWSisNdUNki4edabBEToLNSwjC9-AiJQr4J3y4E",
+    "SVIX_ENDPOINT": "http://localhost:8071",
+    "EXPORTER_PORT": "3003"
+}
+  
 api_target = "//core/api:dev"
 if is_ci:
   api_target = "//core/api:api"
@@ -420,7 +212,7 @@ local_resource(
         period_secs  = 5,
         http_get = http_get_action(
             path = "healthz",
-            port = 4012,
+            port = 8888,
         ),
     ),
     deps = _buck2_dep_inputs(api_trigger_target),
@@ -449,7 +241,7 @@ local_resource(
         period_secs  = 5,
         http_get = http_get_action(
             path = "healthz",
-            port = 4012,
+            port = 3003,
         ),
     ),
     deps = _buck2_dep_inputs(api_exporter_target),
@@ -512,30 +304,6 @@ local_resource(
     ]
 )
 
-local_resource(
-  name='init-onchain',
-  labels = ['bitcoin'],
-  cmd='buck2 run //dev:init-onchain',
-  allow_parallel = True,
-  resource_deps = [
-    "bitcoind",
-    "bria",
-  ]
-)
-
-local_resource(
-  name='init-lightning',
-  labels = ['bitcoin'],
-  cmd='buck2 run //dev:init-lightning',
-  allow_parallel = True,
-  resource_deps = [
-    "init-onchain",
-    "lnd1",
-    "lnd-outside-1",
-    "lnd-outside-2",
-  ]
-)
-
 api_keys_target = "//core/api-keys:api-keys"
 local_resource(
     "api-keys",
@@ -554,6 +322,178 @@ local_resource(
        "api-keys-pg"
     ]
 )
+
+dashboard_target = "//apps/dashboard:dev"
+if is_ci:
+  dashboard_target = '//apps/dashboard:dashboard'
+local_resource(
+    "dashboard",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(dashboard_target),
+    serve_cmd = ". .envs/dashboard.env && buck2 run {}".format(dashboard_target),
+    serve_env = {
+      "NEXTAUTH_URL": "http://localhost:3001",
+      "NEXTAUTH_SECRET": "secret",
+      "PORT": "3001",
+    },
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3001,
+        ),
+    ),
+    deps = _buck2_dep_inputs(dashboard_target),
+    allow_parallel = True,
+    auto_init = run_apps,
+    resource_deps = [
+        "hydra-dashboard",
+        "api-keys",
+        "svix",
+        "svix-pg",
+        "add-test-users-with-usernames",
+        "fund-user",
+        "notifications",
+    ],
+    links = [
+        link("http://localhost:3001", "dashboard"),
+    ],
+)
+
+pay_target = "//apps/pay:dev"
+if is_ci:
+  pay_target = '//apps/pay:pay-ci'
+pay_env = {
+  "PORT": "3002",
+  "CORE_GQL_URL_INTRANET": "http://localhost:4455/graphql",
+  "NEXT_PUBLIC_CORE_GQL_URL": "http://localhost:4455/graphql",
+  "NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL": "ws://localhost:4455/graphqlws",
+  "NEXT_PUBLIC_PAY_DOMAIN": "localhost:3002",
+}
+local_resource(
+    "pay",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(pay_target),
+    serve_cmd = "buck2 run {}".format(pay_target),
+    env = pay_env,
+    serve_env = pay_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3002,
+        ),
+    ),
+    deps = _buck2_dep_inputs(pay_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+    ],
+    links = [
+        link("http://localhost:3002", "pay"),
+    ],
+)
+
+admin_panel_target = "//apps/admin-panel:dev"
+if is_ci:
+  admin_panel_target = '//apps/admin-panel:admin-panel'
+admin_panel_env = {
+    "PORT": "3004",
+    "ADMIN_CORE_API" : "http://localhost:4455/admin/graphql",
+    "NEXTAUTH_URL" : "http://localhost:3004",
+    "NEXTAUTH_SECRET" : "nextAuthSecret",
+}
+local_resource(
+    "admin-panel",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(admin_panel_target),
+    serve_cmd = "buck2 run {}".format(admin_panel_target),
+    env = admin_panel_env,
+    serve_env = admin_panel_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3004,
+        ),
+    ),
+    deps = _buck2_dep_inputs(admin_panel_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "apollo-router",
+    ],
+    links = [
+        link("http://localhost:3004", "admin-panel"),
+    ],
+)
+
+map_target = "//apps/map:dev"
+if is_ci:
+  map_target = '//apps/map:map'
+map_env = {
+    "PORT": "3005",
+    "CORE_URL" : "http://localhost:4455/graphql",
+}
+local_resource(
+    "map",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(map_target),
+    serve_cmd = "buck2 run {}".format(map_target),
+    env = map_env,
+    serve_env = map_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3005,
+        ),
+    ),
+    deps = _buck2_dep_inputs(map_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "apollo-router",
+    ],
+    links = [
+        link("http://localhost:3005", "map"),
+    ],
+)
+
+consent_target = "//apps/consent:dev"
+if is_ci:
+  consent_target = '//apps/consent:consent'
+local_resource(
+    "consent",
+    labels = ["auth"],
+    cmd = "buck2 build {}".format(consent_target),
+    serve_cmd = "buck2 run {}".format(consent_target),
+    deps = _buck2_dep_inputs(consent_target),
+    allow_parallel = True,
+    auto_init = run_apps,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3000,
+        ),
+    ),
+    resource_deps = [
+        "hydra-consent",
+        "apollo-router",
+        "hydra",
+        "api",
+    ],
+    links = [
+        link("http://localhost:3000", "consent"),
+    ],
+)
+
+
+# DOCKER RESOURCES
+# ---
+
+docker_compose("./docker-compose.deps.yml", project_name = "galoy-dev")
 
 docker_groups = {
     "auth": [
@@ -597,24 +537,6 @@ docker_groups = {
     ],
 }
 
-to_run = cfg.get("to-run", [])
-if to_run != []:
-    enabled_resources = []
-    for svc in to_run:
-        enabled_resources.append(svc)
-    config.set_enabled_resources(enabled_resources)
-
-to_test = cfg.get("test", [])
-if to_test != []:
-    enabled_resources = []
-    for label in to_test:
-        svc = TEST_RESOURCES.get(label)
-        if svc:
-            enabled_resources.append(svc)
-    config.set_enabled_resources(enabled_resources)
-
-docker_compose("./docker-compose.deps.yml", project_name = "galoy-dev")
-
 for service in docker_groups["bitcoin"]:
     dc_resource(service, labels = ["bitcoin"])
 for service in docker_groups["tracing"]:
@@ -628,6 +550,87 @@ for service in docker_groups["price"]:
 for service in docker_groups["integration"]:
     dc_resource(service, labels = ["integration"])
 
+
+# TEST RESOURCES
+# ---
+
+CORE_TEST_LABEL = "core"
+CONSENT_TEST_LABEL = "consent"
+DASHBOARD_TEST_LABEL = "dashboard"
+PAY_TEST_LABEL = "pay"
+ADMIN_PANEL_TEST_LABEL = "admin-panel"
+MAP_TEST_LABEL = "map"
+
+TEST_RESOURCES = {
+   CORE_TEST_LABEL: "test-api",
+   CONSENT_TEST_LABEL: "test-consent",
+   DASHBOARD_TEST_LABEL: "test-dashboard",
+   PAY_TEST_LABEL: "test-pay",
+   ADMIN_PANEL_TEST_LABEL: "test-admin-panel",
+   MAP_TEST_LABEL: "test-map"
+}
+
+consent_test_target = "//apps/consent:test-integration"
+local_resource(
+  "test-consent",
+  labels = ["test"],
+  auto_init = is_ci and CONSENT_TEST_LABEL in cfg.get("test", []),
+  cmd = "buck2 test {}".format(consent_test_target),
+  allow_parallel = True,
+  resource_deps = [
+    "consent",
+    "init-test-user",
+  ],
+)
+
+dashboard_test_target = "//apps/dashboard:test-integration"
+local_resource(
+  "test-dashboard",
+  labels = ["test"],
+  auto_init = is_ci and DASHBOARD_TEST_LABEL in cfg.get("test", []),
+  cmd = "buck2 test {}".format(dashboard_test_target),
+  resource_deps = [
+    "consent",
+    "dashboard",
+    "init-test-user",
+  ],
+)
+
+pay_test_target = "//apps/pay:test-integration"
+local_resource(
+  "test-pay",
+  labels = ["test"],
+  auto_init = is_ci and PAY_TEST_LABEL in cfg.get("test", []),
+  cmd = "buck2 test {}".format(pay_test_target),
+  resource_deps = [
+    "api",
+    "pay",
+    "add-test-users-with-usernames",
+  ],
+)
+
+admin_panel_test_target = "//apps/admin-panel:test-integration"
+local_resource(
+  "test-admin-panel",
+  labels = ["test"],
+  auto_init = is_ci and ADMIN_PANEL_TEST_LABEL in cfg.get("test", []),
+  cmd = "buck2 test {}".format(admin_panel_test_target),
+  resource_deps = [
+    "admin-panel",
+  ],
+)
+
+map_test_target = "//apps/map:test-integration"
+local_resource(
+  "test-map",
+  labels = ["test"],
+  auto_init = is_ci and MAP_TEST_LABEL in cfg.get("test", []),
+  cmd = "buck2 test {}".format(map_test_target),
+  resource_deps = [
+    "map",
+  ],
+)
+
 api_test_target = "//core/api:test-integration"
 local_resource(
   "test-api",
@@ -636,3 +639,12 @@ local_resource(
   cmd = "buck2 test {}".format(api_test_target),
   resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"]
 )
+
+to_test = cfg.get("test", [])
+if to_test != []:
+    enabled_resources = []
+    for label in to_test:
+        svc = TEST_RESOURCES.get(label)
+        if svc:
+            enabled_resources.append(svc)
+    config.set_enabled_resources(enabled_resources)

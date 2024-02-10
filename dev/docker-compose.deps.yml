@@ -44,6 +44,11 @@ services:
     - POSTGRES_USER=galoy-price-usr
     - POSTGRES_PASSWORD=galoy-price-pwd
     - POSTGRES_DB=galoy-price-history
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
   api-keys-pg:
     image: postgres:14.1
     environment:
