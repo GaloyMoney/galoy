@@ -370,6 +370,7 @@ plan:
       platform: linux
       image_resource: #@ nodejs_task_image_config()
       inputs:
+        - name: repo
         - name: pipeline-tasks
         - name: edge-image
         - name: charts-repo
@@ -400,7 +401,7 @@ webhook_token: ((webhook.secret))
 name: pipeline-tasks
 type: git
 source:
-  paths: [ci/vendor/*, ci/tasks/*, ci/config/*, ci/apps/tasks/*, Makefile]
+  paths: [ci/vendor/*, ci/tasks/*, ci/config/*, Makefile]
   uri: #@ data.values.git_uri
   branch: #@ data.values.git_branch
   private_key: #@ data.values.github_private_key
@@ -413,14 +414,14 @@ source:
   tag: edge
   username: #@ data.values.docker_registry_user
   password: #@ data.values.docker_registry_password
-  repository: #@ public_docker_registry() if publicRepo else private_docker_registry() + "/" + data.values.gh_repository
+  repository: #@ public_docker_registry() + "/" + data.values.gh_repository if publicRepo else private_docker_registry() + "/" + data.values.gh_repository
 #@ end
 
 #@ def nodejs_deps_resource(webhook = False):
 name: deps
 type: git
 source:
-  paths: [core/api/yarn.lock]
+  paths: [yarn.lock]
   uri: #@ data.values.git_uri
   branch: #@ data.values.git_branch
   private_key: #@ data.values.github_private_key
@@ -477,13 +478,13 @@ source:
   private_key: #@ data.values.github_private_key
 #@ end
 
-#@ def versioned_image_resource():
+#@ def versioned_image_resource(publicRepo = True):
 name: versioned-image
 type: registry-image
 source:
   username: #@ data.values.docker_registry_user
   password: #@ data.values.docker_registry_password
-  repository: #@ public_docker_registry() + "/" + data.values.gh_repository
+  repository: #@ public_docker_registry() + "/" + data.values.gh_repository if publicRepo else private_docker_registry() + "/" + data.values.gh_repository
 #@ end
 
 #@ def gh_release_resource():
