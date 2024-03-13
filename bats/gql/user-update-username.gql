@@ -6,7 +6,9 @@ mutation userUpdateUsername($input: UserUpdateUsernameInput!) {
     }
     user {
       id
-      username
+      defaultAccount {
+        username
+      }
       __typename
     }
     __typename

@@ -25,6 +25,11 @@ import {
 } from "@/domain/fiat"
 import { Accounts, Prices, Wallets } from "@/app"
 import { IInvoiceConnection } from "@/graphql/shared/types/abstract/invoice"
+import Username from "@/graphql/shared/types/scalar/username"
+import AccountContact from "./account-contact"
+import dedent from "dedent"
+import { UnknownClientError } from "@/graphql/error"
+import { baseLogger } from "@/services/logger"
 
 const BusinessAccount = GT.Object({
   name: "BusinessAccount",
@@ -207,6 +212,50 @@ const BusinessAccount = GT.Object({
         }
 
         return result
+      },
+    },
+
+    username: {
+      type: Username,
+      resolve: async (source, args, { domainAccount }) => {
+        return domainAccount?.username
+      },
+    },
+
+    contacts: {
+      type: GT.NonNullList(AccountContact), // TODO: Make it a Connection Interface
+      description: dedent`Get full list of contacts.
+        Can include the transactions associated with each contact.`,
+      resolve: async (source, args, { domainAccount }) => domainAccount?.contacts,
+    },
+
+    contactByUsername: {
+      type: GT.NonNull(AccountContact),
+      description: dedent`Get single contact details.
+        Can include the transactions associated with the contact.`,
+      args: {
+        username: { type: GT.NonNull(Username) },
+      },
+      resolve: async (source, args, { domainAccount }) => {
+        const { username } = args
+        if (!domainAccount) {
+          throw new UnknownClientError({
+            message: "Something went wrong",
+            logger: baseLogger,
+          })
+        }
+        if (username instanceof Error) {
+          throw username
+        }
+        const contact = await Accounts.getContactByUsername({
+          account: domainAccount,
+          contactUsername: username,
+        })
+        if (contact instanceof Error) {
+          throw mapError(contact)
+        }
+
+        return contact
       },
     },
   }),

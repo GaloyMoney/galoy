@@ -1,5 +1,7 @@
 interface Account {
   callbackEndpoints: [CallbackEndpoint!]!
+  contactByUsername(username: Username!): UserContact!
+  contacts: [UserContact!]!
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWallet: PublicWallet!
   defaultWalletId: WalletId! @deprecated(reason: "Shifting property to 'defaultWallet.id'")
@@ -38,6 +40,7 @@ interface Account {
     last: Int
     walletIds: [WalletId]
   ): TransactionConnection
+  username: Username
   walletById(walletId: WalletId!): Wallet!
   wallets: [Wallet!]!
 }
@@ -255,6 +258,18 @@ type ConsumerAccount implements Account {
   callbackEndpoints: [CallbackEndpoint!]!
 
   """
+  Get single contact details.
+  Can include the transactions associated with the contact.
+  """
+  contactByUsername(username: Username!): UserContact!
+
+  """
+  Get full list of contacts.
+  Can include the transactions associated with each contact.
+  """
+  contacts: [UserContact!]!
+
+  """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
   csvTransactions(walletIds: [WalletId!]!): String!
@@ -304,6 +319,7 @@ type ConsumerAccount implements Account {
     last: Int
     walletIds: [WalletId]
   ): TransactionConnection
+  username: Username
   walletById(walletId: WalletId!): Wallet!
   wallets: [Wallet!]!
 }

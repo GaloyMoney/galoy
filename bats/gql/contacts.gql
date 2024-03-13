@@ -1,7 +1,9 @@
 query me {
   me {
-    contacts {
-      username
+    defaultAccount {
+      contacts {
+        username
+      }
     }
   }
 }

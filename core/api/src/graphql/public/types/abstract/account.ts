@@ -18,6 +18,8 @@ import Transaction, {
   TransactionConnection,
 } from "@/graphql/shared/types/object/transaction"
 import { IInvoiceConnection } from "@/graphql/shared/types/abstract/invoice"
+import Username from "@/graphql/shared/types/scalar/username"
+import AccountContact from "../object/account-contact"
 
 const IAccount = GT.Interface({
   name: "Account",
@@ -95,6 +97,19 @@ const IAccount = GT.Interface({
         },
       },
     },
+    username: {
+      type: Username,
+    },
+    contacts: {
+      type: GT.NonNullList(AccountContact),
+    },
+    contactByUsername: {
+      type: GT.NonNull(AccountContact),
+      args: {
+        username: { type: GT.NonNull(Username) },
+      },
+    },
+    
     // FUTURE-PLAN: Support a `users: [User!]!` field here
   }),
 })
