@@ -858,8 +858,8 @@ importers:
         specifier: ^1.22.0
         version: 1.22.0
       '@ory/client':
-        specifier: ^1.6.2
-        version: 1.6.2
+        specifier: ^1.9.0
+        version: 1.9.0
       '@t3-oss/env-core':
         specifier: ^0.7.3
         version: 0.7.3(typescript@5.3.3)(zod@3.22.4)
@@ -4583,6 +4583,19 @@ packages:
       '@babel/types': 7.24.0
     dev: true
 
+  /@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.24.0):
+    resolution: {integrity: sha512-oKckg2eZFa8771O/5vi7XeTvmM6+O9cxZu+kanTU7tD4sin5nO/G8jGJhq8Hvt2Z0kUoEDRayuZLaUlYl8QuGA==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+    dependencies:
+      '@babel/core': 7.24.0
+      '@babel/helper-annotate-as-pure': 7.22.5
+      '@babel/helper-module-imports': 7.22.15
+      '@babel/helper-plugin-utils': 7.24.0
+      '@babel/plugin-syntax-jsx': 7.23.3(@babel/core@7.24.0)
+      '@babel/types': 7.24.0
+
   /@babel/plugin-transform-react-jsx@7.23.4(@babel/core@7.23.5):
     resolution: {integrity: sha512-5xOpoPguCZCRbo/JeHlloSkTA8Bld1J/E1/kLfD1nsuiW1m8tduTA1ERCgIZokDflX/IBzKcqR3l7VlRgiIfHA==}
     engines: {node: '>=6.9.0'}
@@ -5221,7 +5234,7 @@ packages:
       '@babel/helper-plugin-utils': 7.22.5
       '@babel/helper-validator-option': 7.23.5
       '@babel/plugin-transform-react-display-name': 7.23.3(@babel/core@7.24.0)
-      '@babel/plugin-transform-react-jsx': 7.23.4(@babel/core@7.24.0)
+      '@babel/plugin-transform-react-jsx': 7.22.15(@babel/core@7.24.0)
       '@babel/plugin-transform-react-jsx-development': 7.22.5(@babel/core@7.24.0)
       '@babel/plugin-transform-react-pure-annotations': 7.23.3(@babel/core@7.24.0)
 
@@ -9790,8 +9803,8 @@ packages:
     engines: {node: '>=14'}
     dev: false
 
-  /@ory/client@1.6.2:
-    resolution: {integrity: sha512-eeSkFZsrX/hLaariBg2I9PQWueE9IVAV3Tps5UE7CYEvrGziFB1zdv8joQDGMss5O3Yv/CSlSf4rOwTeENDqBg==}
+  /@ory/client@1.9.0:
+    resolution: {integrity: sha512-O4a1ijgJtMNIA+ZmWUmCodxX13ID72hOaCB0b9FQGQBzuFgF2x/Yq5D43nrMYZaDtvDvja8J1XIXhUkjz1TDOw==}
     dependencies:
       axios: 1.6.7
     transitivePeerDependencies:
