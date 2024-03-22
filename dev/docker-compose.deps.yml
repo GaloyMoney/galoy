@@ -73,7 +73,7 @@ services:
       timeout: 30s
       retries: 5
   oathkeeper:
-    image: oryd/oathkeeper:v0.40.6-distroless
+    image: oryd/oathkeeper:v0.40.7-distroless
     ports:
       - "4455:4455"
       - "4456:4456"
@@ -88,7 +88,7 @@ services:
       - apollo-router
       - otel-agent
   hydra:
-    image: oryd/hydra:v2.1.2
+    image: oryd/hydra:v2.2.0
     ports:
       - "4444:4444" #! Public port
       - "4445:4445" #! Admin port
@@ -103,7 +103,7 @@ services:
       - hydra-pg
 
   hydra-migrate:
-    image: oryd/hydra:v2.1.2
+    image: oryd/hydra:v2.2.0
     environment:
       - DSN=postgres://hydra:secret@hydra-pg:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     command: migrate -c /home/ory/hydra.yml sql -e --yes
@@ -121,7 +121,7 @@ services:
       - POSTGRES_PASSWORD=secret
       - POSTGRES_DB=hydra
   kratos:
-    image: oryd/kratos:v1.0.0
+    image: oryd/kratos:v1.1.0
     extra_hosts:
       - "bats-tests:host-gateway"
     ports:

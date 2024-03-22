@@ -897,8 +897,8 @@ importers:
         specifier: ^1.22.0
         version: 1.22.0
       '@ory/client':
-        specifier: ^1.6.2
-        version: 1.6.2
+        specifier: ^1.9.0
+        version: 1.9.0
       '@t3-oss/env-core':
         specifier: ^0.7.3
         version: 0.7.3(typescript@5.3.3)(zod@3.22.4)
@@ -9842,8 +9842,8 @@ packages:
     engines: {node: '>=14'}
     dev: false
 
-  /@ory/client@1.6.2:
-    resolution: {integrity: sha512-eeSkFZsrX/hLaariBg2I9PQWueE9IVAV3Tps5UE7CYEvrGziFB1zdv8joQDGMss5O3Yv/CSlSf4rOwTeENDqBg==}
+  /@ory/client@1.9.0:
+    resolution: {integrity: sha512-O4a1ijgJtMNIA+ZmWUmCodxX13ID72hOaCB0b9FQGQBzuFgF2x/Yq5D43nrMYZaDtvDvja8J1XIXhUkjz1TDOw==}
     dependencies:
       axios: 1.6.7
     transitivePeerDependencies:
