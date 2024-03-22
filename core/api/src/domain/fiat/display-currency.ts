@@ -22,7 +22,7 @@ export const majorToMinorUnit = ({
   displayCurrency: DisplayCurrency
 }): number => {
   const displayMajorExponent = getCurrencyMajorExponent(displayCurrency)
-  return Number(amount) * 10 ** displayMajorExponent
+  return Math.round(Number(amount) * 10 ** displayMajorExponent)
 }
 
 export const getCurrencyMajorExponent = (
@@ -94,11 +94,11 @@ export const priceAmountFromNumber = <
   S extends WalletCurrency,
   T extends DisplayCurrency,
 >({
-  priceOfOneSatInMinorUnit,
+  priceInMinorUnit,
   displayCurrency,
   walletCurrency,
 }: {
-  priceOfOneSatInMinorUnit: number
+  priceInMinorUnit: number
   displayCurrency: T
   walletCurrency: S
 }): WalletMinorUnitDisplayPrice<S, T> => {
@@ -108,7 +108,7 @@ export const priceAmountFromNumber = <
       : USD_PRICE_PRECISION_OFFSET
 
   return {
-    base: BigInt(Math.floor(priceOfOneSatInMinorUnit * 10 ** offset)),
+    base: BigInt(Math.floor(priceInMinorUnit * 10 ** offset)),
     offset: BigInt(offset),
     displayCurrency,
     walletCurrency,
@@ -122,7 +122,7 @@ export const priceAmountFromDisplayPriceRatio = <
   displayPriceRatio: DisplayPriceRatio<S, T>,
 ): WalletMinorUnitDisplayPrice<S, T> =>
   priceAmountFromNumber({
-    priceOfOneSatInMinorUnit: displayPriceRatio.displayMinorUnitPerWalletUnit(),
+    priceInMinorUnit: displayPriceRatio.displayMinorUnitPerWalletUnit(),
     displayCurrency: displayPriceRatio.displayCurrency,
     walletCurrency: displayPriceRatio.walletCurrency,
   })

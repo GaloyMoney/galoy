@@ -474,6 +474,18 @@ export type Currency = {
   readonly symbol: Scalars['String']['output'];
 };
 
+export type CurrencyConversionEstimate = {
+  readonly __typename: 'CurrencyConversionEstimate';
+  /** Amount in satoshis. */
+  readonly btcSatAmount: Scalars['SatAmount']['output'];
+  readonly currency: Currency;
+  readonly id: Scalars['ID']['output'];
+  /** Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC) */
+  readonly timestamp: Scalars['Timestamp']['output'];
+  /** Amount in USD cents. */
+  readonly usdCentAmount: Scalars['CentAmount']['output'];
+};
+
 export type DepositFeesInformation = {
   readonly __typename: 'DepositFeesInformation';
   readonly minBankFee: Scalars['String']['output'];
@@ -1547,6 +1559,8 @@ export type Query = {
   readonly authorization: Authorization;
   readonly btcPriceList?: Maybe<ReadonlyArray<Maybe<PricePoint>>>;
   readonly businessMapMarkers: ReadonlyArray<MapMarker>;
+  /** Returns an estimated conversion rate for the given amount and currency */
+  readonly currencyConversionEstimate: CurrencyConversionEstimate;
   readonly currencyList: ReadonlyArray<Currency>;
   readonly globals?: Maybe<Globals>;
   /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest */
@@ -1574,6 +1588,12 @@ export type QueryAccountDefaultWalletArgs = {
 
 export type QueryBtcPriceListArgs = {
   range: PriceGraphRange;
+};
+
+
+export type QueryCurrencyConversionEstimateArgs = {
+  amount: Scalars['Float']['input'];
+  currency?: InputMaybe<Scalars['DisplayCurrency']['input']>;
 };
 
 
@@ -2050,7 +2070,8 @@ export const UserNotificationCategory = {
   Circles: 'CIRCLES',
   Marketing: 'MARKETING',
   Payments: 'PAYMENTS',
-  Price: 'PRICE'
+  Price: 'PRICE',
+  Security: 'SECURITY'
 } as const;
 
 export type UserNotificationCategory = typeof UserNotificationCategory[keyof typeof UserNotificationCategory];
@@ -3415,6 +3436,7 @@ export type ResolversTypes = {
   Country: ResolverTypeWrapper<Country>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   Currency: ResolverTypeWrapper<Currency>;
+  CurrencyConversionEstimate: ResolverTypeWrapper<CurrencyConversionEstimate>;
   DepositFeesInformation: ResolverTypeWrapper<DepositFeesInformation>;
   DeviceNotificationTokenCreateInput: DeviceNotificationTokenCreateInput;
   DisplayCurrency: ResolverTypeWrapper<Scalars['DisplayCurrency']['output']>;
@@ -3640,6 +3662,7 @@ export type ResolversParentTypes = {
   Country: Country;
   CountryCode: Scalars['CountryCode']['output'];
   Currency: Currency;
+  CurrencyConversionEstimate: CurrencyConversionEstimate;
   DepositFeesInformation: DepositFeesInformation;
   DeviceNotificationTokenCreateInput: DeviceNotificationTokenCreateInput;
   DisplayCurrency: Scalars['DisplayCurrency']['output'];
@@ -4064,6 +4087,15 @@ export type CurrencyResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   symbol?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CurrencyConversionEstimateResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurrencyConversionEstimate'] = ResolversParentTypes['CurrencyConversionEstimate']> = {
+  btcSatAmount?: Resolver<ResolversTypes['SatAmount'], ParentType, ContextType>;
+  currency?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  usdCentAmount?: Resolver<ResolversTypes['CentAmount'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4519,6 +4551,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   authorization?: Resolver<ResolversTypes['Authorization'], ParentType, ContextType>;
   btcPriceList?: Resolver<Maybe<ReadonlyArray<Maybe<ResolversTypes['PricePoint']>>>, ParentType, ContextType, RequireFields<QueryBtcPriceListArgs, 'range'>>;
   businessMapMarkers?: Resolver<ReadonlyArray<ResolversTypes['MapMarker']>, ParentType, ContextType>;
+  currencyConversionEstimate?: Resolver<ResolversTypes['CurrencyConversionEstimate'], ParentType, ContextType, RequireFields<QueryCurrencyConversionEstimateArgs, 'amount' | 'currency'>>;
   currencyList?: Resolver<ReadonlyArray<ResolversTypes['Currency']>, ParentType, ContextType>;
   globals?: Resolver<Maybe<ResolversTypes['Globals']>, ParentType, ContextType>;
   lnInvoicePaymentStatus?: Resolver<ResolversTypes['LnInvoicePaymentStatusPayload'], ParentType, ContextType, RequireFields<QueryLnInvoicePaymentStatusArgs, 'input'>>;
@@ -4875,6 +4908,7 @@ export type Resolvers<ContextType = any> = {
   Country?: CountryResolvers<ContextType>;
   CountryCode?: GraphQLScalarType;
   Currency?: CurrencyResolvers<ContextType>;
+  CurrencyConversionEstimate?: CurrencyConversionEstimateResolvers<ContextType>;
   DepositFeesInformation?: DepositFeesInformationResolvers<ContextType>;
   DisplayCurrency?: GraphQLScalarType;
   Email?: EmailResolvers<ContextType>;

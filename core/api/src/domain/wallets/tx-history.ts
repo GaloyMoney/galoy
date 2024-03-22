@@ -301,7 +301,7 @@ export const displayCurrencyPerBaseUnitFromAmounts = <
   const priceInMinorUnit = walletAmount !== 0 ? displayAmount / walletAmount : 0
 
   return priceAmountFromNumber({
-    priceOfOneSatInMinorUnit: priceInMinorUnit,
+    priceInMinorUnit,
     displayCurrency,
     walletCurrency,
   })

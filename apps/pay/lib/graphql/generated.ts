@@ -433,6 +433,18 @@ export type Currency = {
   readonly symbol: Scalars['String'];
 };
 
+export type CurrencyConversionEstimate = {
+  readonly __typename: 'CurrencyConversionEstimate';
+  /** Amount in satoshis. */
+  readonly btcSatAmount: Scalars['SatAmount'];
+  readonly currency: Currency;
+  readonly id: Scalars['ID'];
+  /** Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC) */
+  readonly timestamp: Scalars['Timestamp'];
+  /** Amount in USD cents. */
+  readonly usdCentAmount: Scalars['CentAmount'];
+};
+
 export type DepositFeesInformation = {
   readonly __typename: 'DepositFeesInformation';
   readonly minBankFee: Scalars['String'];
@@ -1470,6 +1482,8 @@ export type Query = {
   readonly authorization: Authorization;
   readonly btcPriceList?: Maybe<ReadonlyArray<Maybe<PricePoint>>>;
   readonly businessMapMarkers: ReadonlyArray<MapMarker>;
+  /** Returns an estimated conversion rate for the given amount and currency */
+  readonly currencyConversionEstimate: CurrencyConversionEstimate;
   readonly currencyList: ReadonlyArray<Currency>;
   readonly globals?: Maybe<Globals>;
   /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest */
@@ -1497,6 +1511,12 @@ export type QueryAccountDefaultWalletArgs = {
 
 export type QueryBtcPriceListArgs = {
   range: PriceGraphRange;
+};
+
+
+export type QueryCurrencyConversionEstimateArgs = {
+  amount: Scalars['Float'];
+  currency?: InputMaybe<Scalars['DisplayCurrency']>;
 };
 
 
