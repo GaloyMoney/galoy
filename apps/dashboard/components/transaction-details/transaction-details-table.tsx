@@ -49,12 +49,21 @@ export default function TransactionTableComponent({ rows }: TransactionDetailsPr
                 padding: "12px 6px",
               }}
             >
-              Settle Amount
+              Payment Amount
             </th>
 
             <th
               style={{
-                width: 240,
+                width: 140,
+                padding: "12px 6px",
+              }}
+            >
+              Settlement Amount
+            </th>
+
+            <th
+              style={{
+                width: 100,
                 padding: "12px 6px",
               }}
             >
@@ -95,9 +104,24 @@ export default function TransactionTableComponent({ rows }: TransactionDetailsPr
                   })}
                 </Typography>
               </td>
-              <td style={{ padding: "12px 6px" }}>
+              <td
+                style={{
+                  padding: "12px 6px",
+                }}
+              >
                 <Typography level="body-md">
                   {row.node.settlementDisplayAmount} {row.node.settlementDisplayCurrency}
+                </Typography>
+              </td>
+
+              <td
+                style={{
+                  padding: "12px 6px",
+                }}
+              >
+                <Typography level="body-md">
+                  {row.node.settlementAmount}{" "}
+                  {row.node.settlementCurrency === "BTC" ? "sats" : "cents"}
                 </Typography>
               </td>
 
