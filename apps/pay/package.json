@@ -21,7 +21,7 @@
     "bech32": "^2.0.0",
     "bitcoinjs-lib": "5.0.5",
     "bolt11": "1.4.1",
-    "bootstrap": "^4.5.2",
+    "bootstrap": "^5.3.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "copy-to-clipboard": "^3.3.2",
