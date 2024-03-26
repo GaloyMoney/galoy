@@ -7737,23 +7737,23 @@ cargo.rust_library(
 
 alias(
     name = "serde_yaml",
-    actual = ":serde_yaml-0.9.33",
+    actual = ":serde_yaml-0.9.34+deprecated",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "serde_yaml-0.9.33.crate",
-    sha256 = "a0623d197252096520c6f2a5e1171ee436e5af99a5d7caa2891e55e61950e6d9",
-    strip_prefix = "serde_yaml-0.9.33",
-    urls = ["https://crates.io/api/v1/crates/serde_yaml/0.9.33/download"],
+    name = "serde_yaml-0.9.34+deprecated.crate",
+    sha256 = "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47",
+    strip_prefix = "serde_yaml-0.9.34+deprecated",
+    urls = ["https://crates.io/api/v1/crates/serde_yaml/0.9.34+deprecated/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "serde_yaml-0.9.33",
-    srcs = [":serde_yaml-0.9.33.crate"],
+    name = "serde_yaml-0.9.34+deprecated",
+    srcs = [":serde_yaml-0.9.34+deprecated.crate"],
     crate = "serde_yaml",
-    crate_root = "serde_yaml-0.9.33.crate/src/lib.rs",
+    crate_root = "serde_yaml-0.9.34+deprecated.crate/src/lib.rs",
     edition = "2021",
     visibility = [],
     deps = [
@@ -8978,7 +8978,7 @@ cargo.rust_binary(
         ":serde-1.0.197",
         ":serde_json-1.0.114",
         ":serde_with-3.7.0",
-        ":serde_yaml-0.9.33",
+        ":serde_yaml-0.9.34+deprecated",
         ":sqlx-0.7.4",
         ":sqlxmq-0.5.0",
         ":thiserror-1.0.58",
