@@ -38,11 +38,7 @@ import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
 } from "@/services/tracing"
-import {
-  AccountsRepository,
-  WalletsRepository,
-  UsersRepository,
-} from "@/services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
 
 const dealer = DealerPriceService()
@@ -124,7 +120,6 @@ const intraledgerPaymentSendWalletId = async ({
     senderAccount,
     senderWalletId: senderWallet.id,
     recipientAccount,
-    recipientWalletId: recipientWallet.id,
     memo,
   })
   if (paymentSendResult instanceof Error) return paymentSendResult
@@ -212,14 +207,12 @@ const executePaymentViaIntraledger = async <
   senderAccount,
   senderWalletId,
   recipientAccount,
-  recipientWalletId,
   memo,
 }: {
   paymentFlow: PaymentFlow<S, R>
   senderAccount: Account
   senderWalletId: WalletId
   recipientAccount: Account
-  recipientWalletId: WalletId
   memo: string | null
 }): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -240,27 +233,28 @@ const executePaymentViaIntraledger = async <
   })
   if (limitCheck instanceof Error) return limitCheck
 
-  const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
-  if (recipientUser instanceof Error) return recipientUser
+  const { walletDescriptor: recipientWalletDescriptor } = paymentFlow.recipientDetails()
+  if (!recipientWalletDescriptor) {
+    return new InvalidLightningPaymentFlowBuilderStateError(
+      "Expected recipient details missing",
+    )
+  }
 
   const recipientAsNotificationRecipient = {
     accountId: recipientAccount.id,
-    walletId: recipientWalletId,
-    userId: recipientUser.id,
+    walletId: recipientWalletDescriptor.id,
+    userId: recipientAccount.kratosUserId,
     level: recipientAccount.level,
   }
-
-  const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
-  if (senderUser instanceof Error) return senderUser
 
   const senderAsNotificationRecipient = {
     accountId: senderAccount.id,
     walletId: senderWalletId,
-    userId: senderUser.id,
+    userId: senderAccount.kratosUserId,
     level: senderAccount.level,
   }
 
-  return LockService().lockWalletId(senderWalletId, async (signal) =>
+  const journalId = await LockService().lockWalletId(senderWalletId, async (signal) =>
     lockedPaymentViaIntraledgerSteps({
       signal,
 
@@ -271,11 +265,34 @@ const executePaymentViaIntraledger = async <
       recipientUsername: recipientAccount.username,
 
       memo,
-
-      senderAsNotificationRecipient,
-      recipientAsNotificationRecipient,
     }),
   )
+  if (journalId instanceof Error) return journalId
+
+  const recipientWalletTransaction = await getTransactionForWalletByJournalId({
+    walletId: recipientWalletDescriptor.id,
+    journalId,
+  })
+  if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
+  NotificationsService().sendTransaction({
+    recipient: recipientAsNotificationRecipient,
+    transaction: recipientWalletTransaction,
+  })
+
+  const senderWalletTransaction = await getTransactionForWalletByJournalId({
+    walletId: senderWalletId,
+    journalId,
+  })
+  if (senderWalletTransaction instanceof Error) return senderWalletTransaction
+  NotificationsService().sendTransaction({
+    recipient: senderAsNotificationRecipient,
+    transaction: senderWalletTransaction,
+  })
+
+  return {
+    status: PaymentSendStatus.Success,
+    transaction: senderWalletTransaction,
+  }
 }
 
 const lockedPaymentViaIntraledgerSteps = async ({
@@ -288,9 +305,6 @@ const lockedPaymentViaIntraledgerSteps = async ({
   recipientUsername,
 
   memo,
-
-  senderAsNotificationRecipient,
-  recipientAsNotificationRecipient,
 }: {
   signal: WalletIdAbortSignal
 
@@ -301,10 +315,7 @@ const lockedPaymentViaIntraledgerSteps = async ({
   recipientUsername: Username | undefined
 
   memo: string | null
-
-  senderAsNotificationRecipient: NotificationRecipient
-  recipientAsNotificationRecipient: NotificationRecipient
-}): Promise<PaymentSendResult | ApplicationError> => {
+}): Promise<LedgerJournalId | ApplicationError> => {
   const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
   const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
   if (!recipientWalletDescriptor) {
@@ -402,28 +413,5 @@ const lockedPaymentViaIntraledgerSteps = async ({
   })
   if (journal instanceof Error) return journal
 
-  const recipientWalletTransaction = await getTransactionForWalletByJournalId({
-    walletId: recipientWalletDescriptor.id,
-    journalId: journal.journalId,
-  })
-  if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
-  NotificationsService().sendTransaction({
-    recipient: recipientAsNotificationRecipient,
-    transaction: recipientWalletTransaction,
-  })
-
-  const senderWalletTransaction = await getTransactionForWalletByJournalId({
-    walletId: senderWalletDescriptor.id,
-    journalId: journal.journalId,
-  })
-  if (senderWalletTransaction instanceof Error) return senderWalletTransaction
-  NotificationsService().sendTransaction({
-    recipient: senderAsNotificationRecipient,
-    transaction: senderWalletTransaction,
-  })
-
-  return {
-    status: PaymentSendStatus.Success,
-    transaction: senderWalletTransaction,
-  }
+  return journal.journalId
 }
