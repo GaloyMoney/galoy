@@ -100,7 +100,7 @@ local_resource(
         "svix-pg",
         "add-test-users-with-usernames",
         "fund-user",
-        "notifications",
+        "api",
     ],
     links = [
         link("http://localhost:3001", "dashboard"),
@@ -444,6 +444,7 @@ local_resource(
         "mongodb",
         "oathkeeper",
         "svix",
+        "notifications",
     ]
 )
 
@@ -548,7 +549,6 @@ local_resource(
     deps = _buck2_dep_inputs(notifications_target),
     allow_parallel = True,
     resource_deps = [
-       "api",
        "notifications-pg"
     ]
 )
