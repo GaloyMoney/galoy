@@ -66,13 +66,13 @@ test_suite(
 )
 
 dev_update_file(
-  name = "update-supergraph",
+  name = "update-supergraph-with-existing-schemas",
   generated = ":supergraph",
   out = "config/apollo-federation/supergraph.graphql"
 )
 
 sh_binary(
-  name = "update-schemas",
+  name = "update-schemas-and-supergraph",
   main = "bin/update-schemas.sh",
 )
 

@@ -2,16 +2,17 @@
 
 set -e
 
-TARGETS=(
-    "//dev:update-supergraph"
+SCHEMA_TARGETS=(
     "//core/api:update-public-schema"
     "//core/api:update-admin-schema"
     "//core/api-keys:update-schema"
     "//core/notifications:update-schema"
 )
 
-buck2 build "${TARGETS[@]}"
+buck2 build "${SCHEMA_TARGETS[@]}"
 
-for TARGET in "${TARGETS[@]}"; do
-  buck2 run "$TARGET"
+for SCHEMA_TARGET in "${SCHEMA_TARGETS[@]}"; do
+  buck2 run "$SCHEMA_TARGET"
 done
+
+buck2 run "//dev:update-supergraph-with-existing-schemas"
