@@ -338,10 +338,9 @@ type Currency {
   symbol: String!
 }
 
-type CurrencyConversionEstimate {
+type CurrencyConversionEstimation {
   """Amount in satoshis."""
   btcSatAmount: SatAmount!
-  currency: Currency!
   id: ID!
 
   """
@@ -1241,13 +1240,13 @@ type Query {
   businessMapMarkers: [MapMarker!]!
 
   """Returns an estimated conversion rate for the given amount and currency"""
-  currencyConversionEstimate(
+  currencyConversionEstimation(
     """Amount in major unit."""
     amount: Float!
 
     """Currency of the amount to be converted."""
-    currency: DisplayCurrency = "USD"
-  ): CurrencyConversionEstimate!
+    currency: DisplayCurrency!
+  ): CurrencyConversionEstimation!
   currencyList: [Currency!]!
   globals: Globals
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @deprecated(reason: "Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest")
