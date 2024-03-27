@@ -71,7 +71,7 @@
     "csv-writer": "^1.6.0",
     "dataloader": "^2.2.2",
     "dedent": "^1.5.1",
-    "express": "^4.18.2",
+    "express": "^4.19.2",
     "express-jwt": "^8.4.1",
     "firebase-admin": "^12.0.0",
     "google-protobuf": "^3.21.2",
