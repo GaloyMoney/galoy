@@ -104,6 +104,7 @@ sdl(
   name = "public-sdl",
   generator = ":write-sdl",
   args = ["public"],
+  deps_srcs = [":src"],
   visibility = ["PUBLIC"],
 )
 
@@ -122,7 +123,8 @@ dev_update_file(
 sdl(
   name = "admin-sdl",
   generator = ":write-sdl",
-  args = ["admin"]
+  args = ["admin"],
+  deps_srcs = [":src"],
 )
 
 diff_check(

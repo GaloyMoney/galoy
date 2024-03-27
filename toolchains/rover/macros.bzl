@@ -136,19 +136,27 @@ def sdl_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         out.as_output()
     )
 
+    for deps_src in ctx.attrs.deps_srcs:
+        cmd.hidden(deps_src)
+
     ctx.actions.run(cmd, category = "sdl")
     return [DefaultInfo(default_output = out)]
 
 sdl = rule(
     impl = sdl_impl,
     attrs = {
-        "generator": attrs.dep(
+        "generator": attrs.exec_dep(
             providers = [RunInfo],
             doc = """Generator that will output the sdl""",
         ),
         "args": attrs.list(
             attrs.string(),
             default = [],
+        ),
+        "deps_srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """Source files that the generator will depends on""",
         ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",
