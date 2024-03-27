@@ -690,8 +690,8 @@ importers:
         specifier: ^4.2.4
         version: 4.2.4(graphql@16.8.1)
       '@graphql-codegen/typescript':
-        specifier: ^3.0.2
-        version: 3.0.4(graphql@16.8.1)
+        specifier: ^4.0.6
+        version: 4.0.6(graphql@16.8.1)
       '@graphql-codegen/typescript-operations':
         specifier: ^3.0.2
         version: 3.0.4(graphql@16.8.1)
