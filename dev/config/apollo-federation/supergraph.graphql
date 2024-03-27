@@ -468,6 +468,22 @@ type Currency
   symbol: String!
 }
 
+type CurrencyConversionEstimation
+  @join__type(graph: PUBLIC)
+{
+  """Amount in satoshis."""
+  btcSatAmount: SatAmount!
+  id: ID!
+
+  """
+  Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)
+  """
+  timestamp: Timestamp!
+
+  """Amount in USD cents."""
+  usdCentAmount: CentAmount!
+}
+
 type DepositFeesInformation
   @join__type(graph: PUBLIC)
 {
@@ -1587,6 +1603,15 @@ type Query
   authorization: Authorization! @join__field(graph: PUBLIC)
   btcPriceList(range: PriceGraphRange!): [PricePoint] @join__field(graph: PUBLIC)
   businessMapMarkers: [MapMarker!]! @join__field(graph: PUBLIC)
+
+  """Returns an estimated conversion rate for the given amount and currency"""
+  currencyConversionEstimation(
+    """Amount in major unit."""
+    amount: Float!
+
+    """Currency of the amount to be converted."""
+    currency: DisplayCurrency!
+  ): CurrencyConversionEstimation! @join__field(graph: PUBLIC)
   currencyList: [Currency!]! @join__field(graph: PUBLIC)
   globals: Globals @join__field(graph: PUBLIC)
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @join__field(graph: PUBLIC) @deprecated(reason: "Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest")

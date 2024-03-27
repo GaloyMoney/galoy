@@ -17,6 +17,7 @@ import AccountDefaultWalletIdQuery from "@/graphql/public/root/query/account-def
 import LnInvoicePaymentStatusQuery from "@/graphql/public/root/query/ln-invoice-payment-status"
 import LnInvoicePaymentStatusByHashQuery from "@/graphql/public/root/query/ln-invoice-payment-status-by-hash"
 import LnInvoicePaymentStatusByPaymentRequestQuery from "@/graphql/public/root/query/ln-invoice-payment-status-by-payment-request"
+import CurrencyConversionEstimationQuery from "@/graphql/public/root/query/currency-conversion-estimation"
 
 export const queryFields = {
   unauthed: {
@@ -28,6 +29,7 @@ export const queryFields = {
     currencyList: CurrencyListQuery,
     mobileVersions: MobileVersionsQuery,
     realtimePrice: RealtimePriceQuery,
+    currencyConversionEstimation: CurrencyConversionEstimationQuery,
     btcPriceList: BtcPriceListQuery,
     lnInvoicePaymentStatus: LnInvoicePaymentStatusQuery,
     lnInvoicePaymentStatusByHash: LnInvoicePaymentStatusByHashQuery,

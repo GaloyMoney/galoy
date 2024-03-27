@@ -142,7 +142,7 @@ describe("translates ledger txs to wallet txs", () => {
     if (currency === WalletCurrency.Usd) {
       expect(settlementDisplayPrice).toEqual(
         priceAmountFromNumber({
-          priceOfOneSatInMinorUnit: 1,
+          priceInMinorUnit: 1,
           displayCurrency,
           walletCurrency: currency,
         }),
@@ -346,7 +346,7 @@ describe("translates ledger txs to wallet txs", () => {
           settlementDisplayAmount: "0.00",
           settlementDisplayFee: "0.00",
           settlementDisplayPrice: priceAmountFromNumber({
-            priceOfOneSatInMinorUnit: 0,
+            priceInMinorUnit: 0,
             displayCurrency: UsdDisplayCurrency,
             walletCurrency: tx.settlementCurrency,
           }),

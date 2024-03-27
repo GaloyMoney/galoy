@@ -21,3 +21,15 @@ type GetCachedPriceArgs = {
 }
 
 type DisplayCurrencyPrices = { [k: string]: RealTimePrice<DisplayCurrency> }
+
+type EstimateWalletsAmountsArgs = {
+  amount: number
+  currency: string
+}
+
+type WalletsAmounts = {
+  timestamp: Date
+  currency: PriceCurrency
+  btcSatAmount: PaymentAmount<"BTC">
+  usdCentAmount: PaymentAmount<"USD">
+}

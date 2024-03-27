@@ -338,6 +338,20 @@ type Currency {
   symbol: String!
 }
 
+type CurrencyConversionEstimation {
+  """Amount in satoshis."""
+  btcSatAmount: SatAmount!
+  id: ID!
+
+  """
+  Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)
+  """
+  timestamp: Timestamp!
+
+  """Amount in USD cents."""
+  usdCentAmount: CentAmount!
+}
+
 type DepositFeesInformation {
   minBankFee: String!
 
@@ -1224,6 +1238,15 @@ type Query {
   authorization: Authorization!
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker!]!
+
+  """Returns an estimated conversion rate for the given amount and currency"""
+  currencyConversionEstimation(
+    """Amount in major unit."""
+    amount: Float!
+
+    """Currency of the amount to be converted."""
+    currency: DisplayCurrency!
+  ): CurrencyConversionEstimation!
   currencyList: [Currency!]!
   globals: Globals
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @deprecated(reason: "Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest")

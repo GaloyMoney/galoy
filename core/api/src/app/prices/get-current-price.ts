@@ -91,6 +91,22 @@ export const getCurrentPriceAsDisplayPriceRatio = async <T extends DisplayCurren
   })
 }
 
+export const getCurrentUsdCentPriceAsDisplayPriceRatio = async <
+  T extends DisplayCurrency,
+>({
+  currency,
+}: GetCurrentSatPriceArgs): Promise<DisplayPriceRatio<"USD", T> | ApplicationError> => {
+  const price = await getCurrentUsdCentPrice({ currency })
+  if (price instanceof Error) return price
+
+  const exponent = getCurrencyMajorExponent(currency)
+
+  return toDisplayPriceRatio({
+    ratio: price.price * 10 ** exponent,
+    displayCurrency: currency as T,
+  })
+}
+
 const getCachedPrice = async ({
   key,
   currency,
