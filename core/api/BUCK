@@ -104,6 +104,7 @@ sdl(
   name = "public-sdl",
   generator = ":write-sdl",
   args = ["public"],
+  src = ":src",
   visibility = ["PUBLIC"],
 )
 
