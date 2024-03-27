@@ -1,9 +1,15 @@
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
 load("@toolchains//rust:macros.bzl", "galoy_rust_bin", "rustfmt_check", "clippy_check")
 
+filegroup(
+    name = "src",
+    srcs = glob(["src/**/*.rs"]),
+)
+
 sdl(
   name = "sdl",
   generator = ":write-sdl",
+  deps_srcs = [":src"],
   visibility = ["PUBLIC"],
 )
 
@@ -23,7 +29,7 @@ rust_binary(
     name = "write-sdl",
     edition = "2021",
     crate_root = "src/bin/write_sdl.rs",
-    srcs = glob(["src/**/*.rs"]),
+    srcs = [":src"],
     deps = [
         ":lib-notifications",
         "//third-party/rust:async-graphql",
@@ -33,8 +39,7 @@ rust_binary(
 
 galoy_rust_bin(
     name = "notifications",
-    srcs = glob([
-      "src/**/*.rs",
+    srcs = [":src"] + glob([
       ".sqlx/*",
       "migrations/*",
       "locales/*",
