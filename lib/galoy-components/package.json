@@ -30,7 +30,7 @@
     "@storybook/addons": "^7.6.3",
     "@storybook/blocks": "^7.6.3",
     "@storybook/react": "^7.6.3",
-    "@storybook/react-webpack5": "^7.6.3",
+    "@storybook/react-webpack5": "^8.0.4",
     "@storybook/test": "^7.6.3",
     "@types/node": "^20.10.3",
     "@types/react": "^18.2.45",
