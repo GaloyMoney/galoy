@@ -34,6 +34,7 @@ import SelectComponent from "@/components/select"
 import RegisterLink from "@/components/register-link"
 
 import { GetCaptchaChallengeResponse } from "@/app/types/phone-auth.types"
+import { useRouter } from "next/navigation"
 
 interface AuthFormProps {
   authAction: "Register" | "Login"
@@ -46,6 +47,7 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
   countryCodes,
   authAction,
 }) => {
+  const router = useRouter()
   const [phoneNumber, setPhoneNumber] = useState<string>("")
   const [state, formAction] = useFormState<GetCaptchaChallengeResponse, FormData>(
     getCaptchaChallenge,
@@ -156,11 +158,12 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
             Next
           </PrimaryButton>
           <SecondaryButton
-            type="submit"
+            type="button"
             id="reject"
-            name="submit"
+            name="cancel"
             value={SubmitValue.denyAccess}
             formNoValidate
+            onClick={() => router.back()}
           >
             Cancel
           </SecondaryButton>

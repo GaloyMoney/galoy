@@ -2,6 +2,7 @@
 import React from "react"
 
 import { useFormState } from "react-dom"
+import { useRouter } from "next/navigation"
 import { toast } from "react-toastify"
 
 import InputComponent from "../../components/input-component"
@@ -23,6 +24,8 @@ interface LoginProps {
 }
 
 const EmailLoginForm = ({ login_challenge }: LoginProps) => {
+  const router = useRouter()
+
   const [state, formAction] = useFormState<LoginEmailResponse, FormData>(submitForm, {
     error: false,
     message: null,
@@ -73,11 +76,12 @@ const EmailLoginForm = ({ login_challenge }: LoginProps) => {
             Next
           </PrimaryButton>
           <SecondaryButton
-            type="submit"
+            type="button"
             id="reject"
-            name="submit"
+            name="cancel"
             value={SubmitValue.denyAccess}
             formNoValidate
+            onClick={() => router.back()}
           >
             Cancel
           </SecondaryButton>
