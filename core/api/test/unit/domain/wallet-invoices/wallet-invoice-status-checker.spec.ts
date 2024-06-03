@@ -32,6 +32,7 @@ const baseInvoice: WalletInvoice = {
     cltvDelta: null,
     amount: null,
     paymentAmount: null,
+    createdAt: new Date(),
   },
 }
 

@@ -111,6 +111,7 @@ type LnInvoice = {
   readonly features: LnInvoiceFeature[]
   readonly expiresAt: Date
   readonly isExpired: boolean
+  readonly createdAt: Date
 }
 
 type LndAndPubkey = { lnd: AuthenticatedLnd; pubkey: Pubkey }

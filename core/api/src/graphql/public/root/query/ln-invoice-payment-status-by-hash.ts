@@ -27,14 +27,14 @@ const LnInvoicePaymentStatusByHashQuery = GT.Field({
       throw mapAndParseErrorForGqlResponse(paid)
     }
 
-    const { paymentRequest, isExpired } = paymentStatusChecker
-
+    const { paymentRequest, isExpired, expiresAt, createdAt } = paymentStatusChecker
+    const result = { paymentHash, paymentRequest, expiresAt, createdAt, status: WalletInvoiceStatus.Paid }
     if (paid) {
-      return { paymentHash, paymentRequest, status: WalletInvoiceStatus.Paid }
+      return result
     }
 
     const status = isExpired ? WalletInvoiceStatus.Expired : WalletInvoiceStatus.Pending
-    return { paymentHash, paymentRequest, status }
+    return { ...result, status }
   },
 })
 

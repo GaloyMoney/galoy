@@ -8,13 +8,14 @@ export const PaymentStatusChecker = async (uncheckedPaymentRequest: string) => {
   const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
 
-  const { paymentRequest, paymentHash, expiresAt, isExpired } = decodedInvoice
+  const { paymentRequest, paymentHash, expiresAt, isExpired, createdAt } = decodedInvoice
 
   return {
     paymentRequest,
     paymentHash,
     expiresAt,
     isExpired,
+    createdAt,
     invoiceIsPaid: async (): Promise<boolean | RepositoryError> => {
       const ledger = LedgerService()
       const recorded = await ledger.isLnTxRecorded(paymentHash)

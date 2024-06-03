@@ -26,6 +26,7 @@ export const decodeInvoice = (
   const cltvDelta: number | null = decodedInvoice.cltv_delta
     ? decodedInvoice.cltv_delta
     : null
+  const createdAt = new Date(decodedInvoice.created_at)
   const expiresAt = new Date(decodedInvoice.expires_at)
   const isExpired = !!decodedInvoice.is_expired
   const amount: Satoshis | null = decodedInvoice.safe_tokens
@@ -58,6 +59,7 @@ export const decodeInvoice = (
     isExpired,
     routeHints,
     cltvDelta,
+    createdAt,
     paymentRequest: bolt11EncodedInvoice as EncodedPaymentRequest,
     description: decodedInvoice.description || "",
     paymentHash: decodedInvoice.id as PaymentHash,
