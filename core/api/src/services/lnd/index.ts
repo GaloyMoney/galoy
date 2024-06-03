@@ -56,8 +56,6 @@ import {
   InvoiceExpiredOrBadPaymentHashError,
   InvoiceNotFoundError,
   LightningServiceError,
-  LnAlreadyPaidError,
-  LnPaymentPendingError,
   LookupPaymentTimedOutError,
   OffChainServiceBusyError,
   OffChainServiceUnavailableError,
@@ -78,6 +76,8 @@ import {
   decodeInvoice,
   InvalidInvoiceAmountError,
   InvoiceAlreadySettledError,
+  LnPaymentAttemptResult,
+  LnPaymentAttemptResultType,
 } from "@/domain/bitcoin/lightning"
 import { CacheKeys } from "@/domain/cache"
 import { LnFees } from "@/domain/payments"
@@ -110,9 +110,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
 
   const listActivePubkeys = (): Pubkey[] =>
     getLnds({ active: true, type: "offchain" }).map((lndAuth) => lndAuth.pubkey as Pubkey)
-
-  const listActiveLnd = (): AuthenticatedLnd[] =>
-    getLnds({ active: true, type: "offchain" }).map((lndAuth) => lndAuth.lnd)
 
   const listActiveLndsWithPubkeys = (): { lnd: AuthenticatedLnd; pubkey: Pubkey }[] =>
     getLnds({ active: true, type: "offchain" }).map((lndAuth) => ({
@@ -617,7 +614,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
       try {
         const { payments, next } = await getPaymentsFn({ lnd, ...pagingArgs })
         return {
-          lnPayments: payments.map(translateLnPaymentLookup),
+          lnPayments: payments.map((p) =>
+            translateLnPaymentLookup({ p, sentFromPubkey: pubkey }),
+          ),
           endCursor: (next as PagingContinueToken) || false,
         }
       } catch (err) {
@@ -774,13 +773,13 @@ export const LndService = (): ILightningService | LightningServiceError => {
     paymentHash: PaymentHash
     rawRoute: RawRoute
     pubkey: Pubkey
-  }): Promise<PayInvoiceResult | LightningServiceError> => {
+  }): Promise<LnPaymentAttemptResult> => {
     let cancelTimeout = () => {
       return
     }
     try {
       const lnd = getLndFromPubkey({ pubkey })
-      if (lnd instanceof Error) return lnd
+      if (lnd instanceof Error) return LnPaymentAttemptResult.err(lnd)
 
       const paymentPromise = payViaRoutes({
         lnd,
@@ -798,31 +797,43 @@ export const LndService = (): ILightningService | LightningServiceError => {
       ])) as PayViaRoutesResult
       cancelTimeout()
 
-      return {
+      return LnPaymentAttemptResult.ok({
         roundedUpFee: toSats(paymentResult.safe_fee),
         revealedPreImage: paymentResult.secret as RevealedPreImage,
         sentFromPubkey: pubkey,
-      }
+      })
     } catch (err) {
       if (err instanceof Error && err.message === "Timeout") {
-        return new LnPaymentPendingError()
+        return LnPaymentAttemptResult.pending({
+          sentFromPubkey: pubkey,
+        })
       }
       cancelTimeout()
-      return handleSendPaymentLndErrors({ err, paymentHash })
+
+      const errDetails = parseLndErrorDetails(err)
+      if (KnownLndErrorDetails.InvoiceAlreadyPaid.test(errDetails)) {
+        return LnPaymentAttemptResult.alreadyPaid({
+          sentFromPubkey: pubkey,
+        })
+      }
+
+      return LnPaymentAttemptResult.err(handleSendPaymentLndErrors({ err, paymentHash }))
     }
   }
 
   const payInvoiceViaPaymentDetailsWithLnd = async ({
     lnd,
+    pubkey,
     decodedInvoice,
     btcPaymentAmount,
     maxFeeAmount,
   }: {
     lnd: AuthenticatedLnd
+    pubkey: Pubkey
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
     maxFeeAmount: BtcPaymentAmount | undefined
-  }): Promise<PayInvoiceResult | LightningServiceError> => {
+  }): Promise<LnPaymentAttemptResult> => {
     const milliSatsAmount = btcPaymentAmount.amount * 1000n
     const maxFee = maxFeeAmount !== undefined ? Number(maxFeeAmount.amount) : undefined
 
@@ -874,17 +885,29 @@ export const LndService = (): ILightningService | LightningServiceError => {
       ])) as PayViaPaymentDetailsResult
       cancelTimeout()
 
-      return {
+      return LnPaymentAttemptResult.ok({
         roundedUpFee: toSats(paymentResult.safe_fee),
         revealedPreImage: paymentResult.secret as RevealedPreImage,
-        sentFromPubkey: defaultPubkey,
-      }
+        sentFromPubkey: pubkey,
+      })
     } catch (err) {
       if (err instanceof Error && err.message === "Timeout") {
-        return new LnPaymentPendingError()
+        return LnPaymentAttemptResult.pending({
+          sentFromPubkey: pubkey,
+        })
       }
       cancelTimeout()
-      return handleSendPaymentLndErrors({ err, paymentHash: decodedInvoice.paymentHash })
+
+      const errDetails = parseLndErrorDetails(err)
+      if (KnownLndErrorDetails.InvoiceAlreadyPaid.test(errDetails)) {
+        return LnPaymentAttemptResult.alreadyPaid({
+          sentFromPubkey: pubkey,
+        })
+      }
+
+      return LnPaymentAttemptResult.err(
+        handleSendPaymentLndErrors({ err, paymentHash: decodedInvoice.paymentHash }),
+      )
     }
   }
 
@@ -896,20 +919,29 @@ export const LndService = (): ILightningService | LightningServiceError => {
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
     maxFeeAmount: BtcPaymentAmount | undefined
-  }): Promise<PayInvoiceResult | LightningServiceError> => {
-    const lnds = listActiveLnd()
-    for (const lnd of lnds) {
+  }): Promise<LnPaymentAttemptResult> => {
+    const lnds = listActiveLndsWithPubkeys()
+    for (const { lnd, pubkey } of lnds) {
       const result = await payInvoiceViaPaymentDetailsWithLnd({
         lnd,
+        pubkey,
         decodedInvoice,
         btcPaymentAmount,
         maxFeeAmount,
       })
-      if (isConnectionError(result)) continue
+      if (
+        result.type === LnPaymentAttemptResultType.Error &&
+        isConnectionError(result.error)
+      ) {
+        continue
+      }
+
       return result
     }
 
-    return new OffChainServiceUnavailableError("no active lightning node (for offchain)")
+    return LnPaymentAttemptResult.err(
+      new OffChainServiceUnavailableError("no active lightning node (for offchain)"),
+    )
   }
 
   return wrapAsyncFunctionsToRunInSpan({
@@ -1023,6 +1055,7 @@ const lookupPaymentByPubkeyAndHash = async ({
           hopPubkeys: undefined,
         },
         attempts: undefined,
+        sentFromPubkey: pubkey,
       }
     }
 
@@ -1036,11 +1069,12 @@ const lookupPaymentByPubkeyAndHash = async ({
         roundedUpAmount: toSats(pending.safe_tokens),
         confirmedDetails: undefined,
         attempts: undefined,
+        sentFromPubkey: pubkey,
       }
     }
 
     if (status === PaymentStatus.Failed) {
-      return { status: PaymentStatus.Failed }
+      return { status: PaymentStatus.Failed, sentFromPubkey: pubkey }
     }
 
     return new BadPaymentDataError(JSON.stringify(result))
@@ -1063,7 +1097,13 @@ const lookupPaymentByPubkeyAndHash = async ({
 const isPaymentConfirmed = (p: PaymentResult): p is ConfirmedPaymentResult =>
   p.is_confirmed
 
-const translateLnPaymentLookup = (p: PaymentResult): LnPaymentLookup => ({
+const translateLnPaymentLookup = ({
+  p,
+  sentFromPubkey,
+}: {
+  p: PaymentResult
+  sentFromPubkey: Pubkey
+}): LnPaymentLookup => ({
   createdAt: new Date(p.created_at),
   status: p.is_confirmed ? PaymentStatus.Settled : PaymentStatus.Pending,
   paymentHash: p.id as PaymentHash,
@@ -1081,6 +1121,7 @@ const translateLnPaymentLookup = (p: PaymentResult): LnPaymentLookup => ({
       }
     : undefined,
   attempts: p.attempts,
+  sentFromPubkey,
 })
 
 const translateLnInvoiceLookup = (
@@ -1185,8 +1226,6 @@ const handleSendPaymentLndErrors = ({
   const errDetails = parseLndErrorDetails(err)
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
   switch (true) {
-    case match(KnownLndErrorDetails.InvoiceAlreadyPaid):
-      return new LnAlreadyPaidError()
     case match(KnownLndErrorDetails.UnableToFindRoute):
     case match(KnownLndErrorDetails.FailedToFindRoute):
       return new RouteNotFoundError()

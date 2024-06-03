@@ -7,6 +7,7 @@ export {
   invoiceExpirationForCurrency,
   defaultTimeToExpiryInSeconds,
 } from "./invoice-expiration"
+export * from "./ln-payment-result"
 export * from "./errors"
 
 export const PaymentStatus = {

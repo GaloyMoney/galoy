@@ -127,7 +127,7 @@ export const LnSendLedgerMetadata = ({
   memoOfPayer,
 }: {
   paymentHash: PaymentHash
-  pubkey: Pubkey
+  pubkey: Pubkey | undefined
   paymentAmounts: AmountsAndFees
 
   feeDisplayCurrency: DisplayCurrencyBaseAmount

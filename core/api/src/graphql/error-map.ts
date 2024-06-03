@@ -563,8 +563,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvoiceNotFoundError":
     case "InvoiceAlreadySettledError":
     case "InvoiceNotPaidError":
-    case "LnPaymentPendingError":
-    case "LnAlreadyPaidError":
     case "PaymentNotFoundError":
     case "OperationInterruptedError":
     case "InconsistentDataError":

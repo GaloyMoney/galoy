@@ -11,6 +11,7 @@ import { staticAccountIds } from "./static-account-ids"
 
 import { UnknownLedgerError } from "@/domain/ledger"
 import { ZERO_CENTS, ZERO_SATS } from "@/domain/shared"
+import { NoTransactionToUpdateError } from "@/domain/errors"
 
 export const recordSendOffChain = async ({
   description,
@@ -85,6 +86,25 @@ export const settlePendingLnSend = async (
     const success = result.modifiedCount > 0
     if (!success) {
       return new NoTransactionToSettleError()
+    }
+    return true
+  } catch (err) {
+    return new UnknownLedgerError(err)
+  }
+}
+
+export const updatePubkeyByHash = async ({
+  paymentHash,
+  pubkey,
+}: {
+  paymentHash: PaymentHash
+  pubkey: Pubkey
+}): Promise<true | LedgerServiceError> => {
+  try {
+    const result = await Transaction.updateMany({ hash: paymentHash }, { pubkey })
+    const success = result.modifiedCount > 0
+    if (!success) {
+      return new NoTransactionToUpdateError(paymentHash)
     }
     return true
   } catch (err) {

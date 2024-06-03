@@ -49,7 +49,6 @@ const paymentSchema = new Schema<LnPaymentType>({
   paymentRequest: String,
   sentFromPubkey: {
     type: String,
-    required: true,
   },
   milliSatsAmount: Number,
   roundedUpAmount: Number,

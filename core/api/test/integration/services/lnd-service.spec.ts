@@ -15,12 +15,12 @@ import { WalletCurrency } from "@/domain/shared"
 import { toSats } from "@/domain/bitcoin"
 import {
   InvoiceNotFoundError,
-  LnAlreadyPaidError,
   PaymentNotFoundError,
   PaymentRejectedByDestinationError,
   PaymentStatus,
   RouteNotFoundError,
   decodeInvoice,
+  LnPaymentAttemptResultType,
 } from "@/domain/bitcoin/lightning"
 import { LnFees } from "@/domain/payments"
 
@@ -236,15 +236,18 @@ describe("Lnd", () => {
         btcPaymentAmount,
         maxFeeAmount: undefined,
       })
-      if (paid instanceof Error) throw paid
-      expect(paid.revealedPreImage).toHaveLength(64)
+      if (paid.type === LnPaymentAttemptResultType.Error) throw paid.error
+      if (!(paid.type === LnPaymentAttemptResultType.Ok)) {
+        throw new Error(JSON.stringify(paid))
+      }
+      expect(paid.result.revealedPreImage).toHaveLength(64)
 
       const retryPaid = await lndService.payInvoiceViaPaymentDetails({
         decodedInvoice: lnInvoice,
         btcPaymentAmount,
         maxFeeAmount: undefined,
       })
-      expect(retryPaid).toBeInstanceOf(LnAlreadyPaidError)
+      expect(retryPaid.type).toEqual(LnPaymentAttemptResultType.AlreadyPaid)
     })
 
     it("fails to pay when channel capacity exceeded", async () => {
@@ -257,7 +260,9 @@ describe("Lnd", () => {
         btcPaymentAmount,
         maxFeeAmount: undefined,
       })
-      expect(paid).toBeInstanceOf(PaymentRejectedByDestinationError)
+      expect(paid.type === LnPaymentAttemptResultType.Error && paid.error).toBeInstanceOf(
+        PaymentRejectedByDestinationError,
+      )
     })
 
     it("pay invoice with High CLTV Delta", async () => {
@@ -275,8 +280,10 @@ describe("Lnd", () => {
         btcPaymentAmount,
         maxFeeAmount: undefined,
       })
-      if (paid instanceof Error) throw paid
-      expect(paid.revealedPreImage).toHaveLength(64)
+      if (paid.type === LnPaymentAttemptResultType.Error) throw paid.error
+      expect(
+        paid.type === LnPaymentAttemptResultType.Ok && paid.result.revealedPreImage,
+      ).toHaveLength(64)
     })
 
     it("pays high fee route with no max limit", async () => {
@@ -289,9 +296,13 @@ describe("Lnd", () => {
         btcPaymentAmount,
         maxFeeAmount: undefined,
       })
-      if (paid instanceof Error) throw paid
-      expect(paid.revealedPreImage).toHaveLength(64)
-      expect(paid.roundedUpFee).toEqual(
+      if (paid.type === LnPaymentAttemptResultType.Error) throw paid.error
+      if (!(paid.type === LnPaymentAttemptResultType.Ok)) {
+        throw new Error(JSON.stringify(paid))
+      }
+      expect(paid.result.revealedPreImage).toHaveLength(64)
+
+      expect(paid.result.roundedUpFee).toEqual(
         Number(btcPaymentAmount.amount) * ROUTE_PPM_PERCENT,
       )
     })
@@ -306,7 +317,9 @@ describe("Lnd", () => {
         btcPaymentAmount,
         maxFeeAmount: LnFees().maxProtocolAndBankFee(btcPaymentAmount),
       })
-      expect(paid).toBeInstanceOf(RouteNotFoundError)
+      expect(paid.type === LnPaymentAttemptResultType.Error && paid.error).toBeInstanceOf(
+        RouteNotFoundError,
+      )
     })
 
     it("fails to probe across route with fee higher than payment amount", async () => {

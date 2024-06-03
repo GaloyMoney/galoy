@@ -172,7 +172,10 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
 
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
-    const lnPaymentLookup = await lndService.lookupPayment({ paymentHash })
+    const lnPaymentLookup = await lndService.lookupPayment({
+      pubkey,
+      paymentHash,
+    })
     if (lnPaymentLookup instanceof Error) {
       logger.error(
         {

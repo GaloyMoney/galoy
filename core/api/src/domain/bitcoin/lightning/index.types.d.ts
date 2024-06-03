@@ -91,10 +91,12 @@ type LnPaymentLookup = {
 
   readonly confirmedDetails: LnPaymentConfirmedDetails | undefined
   readonly attempts: LnPaymentAttempt[] | undefined
+  readonly sentFromPubkey: Pubkey
 }
 
 type LnFailedPartialPaymentLookup = {
   readonly status: FailedPaymentStatus
+  readonly sentFromPubkey: Pubkey
 }
 
 type LnInvoice = {
@@ -135,6 +137,10 @@ type PayInvoiceResult = {
   sentFromPubkey: Pubkey
 }
 
+type PayInvoicePartialResult = {
+  sentFromPubkey: Pubkey
+}
+
 type ListLnPaymentsArgs = {
   after: PagingStartToken | PagingContinueToken
   pubkey: Pubkey
@@ -157,6 +163,29 @@ type ListLnInvoicesArgs = {
   pubkey?: Pubkey
   createdAfter?: Date
 }
+
+type LnPaymentAttemptResultTypeObj =
+  typeof import("./ln-payment-result").LnPaymentAttemptResultType
+type LnPaymentAttemptResultType =
+  LnPaymentAttemptResultTypeObj[keyof LnPaymentAttemptResultTypeObj]
+
+type LnPaymentAttemptResult =
+  | {
+      type: LnPaymentAttemptResultTypeObj["Ok"]
+      result: PayInvoiceResult
+    }
+  | {
+      type: LnPaymentAttemptResultTypeObj["Pending"]
+      result: PayInvoicePartialResult
+    }
+  | {
+      type: LnPaymentAttemptResultTypeObj["AlreadyPaid"]
+      result: PayInvoicePartialResult
+    }
+  | {
+      type: LnPaymentAttemptResultTypeObj["Error"]
+      error: LightningServiceError
+    }
 
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean
@@ -276,7 +305,7 @@ interface ILightningService {
     paymentHash: PaymentHash
     rawRoute: RawRoute | undefined
     pubkey: Pubkey | undefined
-  }): Promise<PayInvoiceResult | LightningServiceError>
+  }): Promise<LnPaymentAttemptResult>
 
   payInvoiceViaPaymentDetails({
     decodedInvoice,
@@ -286,7 +315,7 @@ interface ILightningService {
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
     maxFeeAmount: BtcPaymentAmount | undefined
-  }): Promise<PayInvoiceResult | LightningServiceError>
+  }): Promise<LnPaymentAttemptResult>
 }
 
 // from Alex Bosworth invoice library

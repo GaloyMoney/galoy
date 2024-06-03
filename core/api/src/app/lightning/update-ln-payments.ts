@@ -133,6 +133,8 @@ const updateLnPaymentsPaginated = async ({
     )
     if (!persistedPaymentLookup) return { after: updatedAfter, processedLnPaymentsHashes }
 
+    persistedPaymentLookup.sentFromPubkey = pubkey
+
     persistedPaymentLookup.createdAt = payment.createdAt
     persistedPaymentLookup.status = payment.status
     persistedPaymentLookup.milliSatsAmount = payment.milliSatsAmount

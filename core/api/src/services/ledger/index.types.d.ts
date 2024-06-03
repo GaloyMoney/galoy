@@ -95,7 +95,7 @@ type AddLnSendLedgerMetadata = LedgerMetadata &
   LedgerSendMetadata &
   SendAmountsMetadata & {
     hash: PaymentHash
-    pubkey: Pubkey
+    pubkey: Pubkey | undefined
     feeKnownInAdvance: boolean
   }
 

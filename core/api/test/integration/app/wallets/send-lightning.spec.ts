@@ -8,6 +8,7 @@ import {
   MaxFeeTooLargeForRoutelessPaymentError,
   PaymentSendStatus,
   decodeInvoice,
+  LnPaymentAttemptResultType,
 } from "@/domain/bitcoin/lightning"
 import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
 import { LnPaymentRequestNonZeroAmountRequiredError } from "@/domain/payments"
@@ -430,9 +431,12 @@ describe("initiated via lightning", () => {
         defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
         listAllPubkeys: () => [],
         payInvoiceViaPaymentDetails: () => ({
-          roundedUpFee: toSats(0),
-          revealedPreImage: "revealedPreImage" as RevealedPreImage,
-          sentFromPubkey: DEFAULT_PUBKEY,
+          type: LnPaymentAttemptResultType.Ok,
+          result: {
+            roundedUpFee: toSats(0),
+            revealedPreImage: "revealedPreImage" as RevealedPreImage,
+            sentFromPubkey: DEFAULT_PUBKEY,
+          },
         }),
       })
 
@@ -549,9 +553,12 @@ describe("initiated via lightning", () => {
         defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
         listAllPubkeys: () => [],
         payInvoiceViaPaymentDetails: () => ({
-          roundedUpFee: toSats(0),
-          revealedPreImage: "revealedPreImage" as RevealedPreImage,
-          sentFromPubkey: DEFAULT_PUBKEY,
+          type: LnPaymentAttemptResultType.Ok,
+          result: {
+            roundedUpFee: toSats(0),
+            revealedPreImage: "revealedPreImage" as RevealedPreImage,
+            sentFromPubkey: DEFAULT_PUBKEY,
+          },
         }),
       })
 

@@ -12,10 +12,11 @@ import { AccountValidator } from "@/domain/accounts"
 import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
-  LnAlreadyPaidError,
-  LnPaymentPendingError,
   PaymentSendStatus,
+  LnPaymentAttemptResult,
+  LnPaymentAttemptResultType,
 } from "@/domain/bitcoin/lightning"
+import { ResourceExpiredLockServiceError } from "@/domain/lock"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@/domain/errors"
 import { DisplayAmountsConverter } from "@/domain/fiat"
 import {
@@ -73,8 +74,6 @@ import {
   validateIsBtcWallet,
   validateIsUsdWallet,
 } from "@/app/wallets"
-
-import { ResourceExpiredLockServiceError } from "@/domain/lock"
 
 const dealer = DealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
@@ -879,7 +878,7 @@ const lockedPaymentViaLnSteps = async ({
       displayCurrency: senderDisplayCurrency,
 
       paymentAmounts: paymentFlow,
-      pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
+      pubkey: outgoingNodePubkey,
       paymentHash,
       feeKnownInAdvance: !!rawRoute,
 
@@ -916,7 +915,7 @@ const lockedPaymentViaLnSteps = async ({
   const { journalId } = journal
 
   // Execute payment
-  let payResult: PayInvoiceResult | LightningServiceError
+  let payResult: LnPaymentAttemptResult
   if (rawRoute) {
     payResult = await lndService.payInvoiceViaRoutes({
       paymentHash,
@@ -937,28 +936,44 @@ const lockedPaymentViaLnSteps = async ({
 
     payResult =
       maxFeeCheck instanceof Error
-        ? maxFeeCheck
+        ? LnPaymentAttemptResult.err(maxFeeCheck)
         : await lndService.payInvoiceViaPaymentDetails({
             ...maxFeeCheckArgs,
             decodedInvoice,
           })
   }
 
-  if (!(payResult instanceof LnAlreadyPaidError)) {
+  if (!(payResult.type === LnPaymentAttemptResultType.AlreadyPaid)) {
     await LnPaymentsRepository().persistNew({
       paymentHash: decodedInvoice.paymentHash,
       paymentRequest: decodedInvoice.paymentRequest,
-      sentFromPubkey: outgoingNodePubkey || lndService.defaultPubkey(),
+      sentFromPubkey:
+        payResult.type === LnPaymentAttemptResultType.Error
+          ? outgoingNodePubkey
+          : payResult.result.sentFromPubkey,
     })
 
-    if (!(payResult instanceof Error))
+    if (payResult.type === LnPaymentAttemptResultType.Ok)
       await LedgerFacade.updateMetadataByHash({
         hash: paymentHash,
-        revealedPreImage: payResult.revealedPreImage,
+        revealedPreImage: payResult.result.revealedPreImage,
       })
   }
 
-  if (payResult instanceof LnPaymentPendingError) {
+  if (
+    outgoingNodePubkey === undefined &&
+    !(payResult.type === LnPaymentAttemptResultType.Error)
+  ) {
+    const updatedPubkey = await LedgerFacade.updatePubkeyByHash({
+      paymentHash,
+      pubkey: payResult.result.sentFromPubkey,
+    })
+    if (updatedPubkey instanceof Error) {
+      recordExceptionInCurrentSpan({ error: updatedPubkey })
+    }
+  }
+
+  if (payResult.type === LnPaymentAttemptResultType.Pending) {
     paymentFlow.paymentSentAndPending = true
     const updateResult = await paymentFlowRepo.updateLightningPaymentFlow(paymentFlow)
     if (updateResult instanceof Error) {
@@ -977,7 +992,10 @@ const lockedPaymentViaLnSteps = async ({
   }
 
   // Settle and record reversion entries
-  if (payResult instanceof Error) {
+  if (
+    payResult.type === LnPaymentAttemptResultType.Error ||
+    payResult.type === LnPaymentAttemptResultType.AlreadyPaid
+  ) {
     const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
     if (settled instanceof Error) return LnSendAttemptResult.err(settled)
 
@@ -995,9 +1013,10 @@ const lockedPaymentViaLnSteps = async ({
     if (updateJournalTxnsState instanceof Error) {
       return LnSendAttemptResult.err(updateJournalTxnsState)
     }
-    return payResult instanceof LnAlreadyPaidError
+
+    return payResult.type === LnPaymentAttemptResultType.AlreadyPaid
       ? LnSendAttemptResult.alreadyPaid(journalId)
-      : LnSendAttemptResult.errWithJournal({ journalId, error: payResult })
+      : LnSendAttemptResult.errWithJournal({ journalId, error: payResult.error })
   }
 
   // Settle and conditionally record reimbursement entries
@@ -1010,8 +1029,8 @@ const lockedPaymentViaLnSteps = async ({
       senderDisplayAmount: toDisplayBaseAmount(displayAmount),
       senderDisplayCurrency,
       journalId,
-      actualFee: payResult.roundedUpFee,
-      revealedPreImage: payResult.revealedPreImage,
+      actualFee: payResult.result.roundedUpFee,
+      revealedPreImage: payResult.result.revealedPreImage,
     })
     if (reimbursed instanceof Error) return LnSendAttemptResult.err(reimbursed)
   }

@@ -16,9 +16,9 @@ export const deleteLnPaymentsBefore = async (
 ): Promise<true | ApplicationError> => {
   const paymentHashesBefore = listAllPaymentsBefore(timestamp)
 
-  for await (const paymentHash of paymentHashesBefore) {
-    if (paymentHash instanceof Error) return paymentHash
-    await checkAndDeletePaymentForHash(paymentHash)
+  for await (const paymentHashAndPubkey of paymentHashesBefore) {
+    if (paymentHashAndPubkey instanceof Error) return paymentHashAndPubkey
+    await checkAndDeletePaymentForHash(paymentHashAndPubkey)
   }
 
   return true
