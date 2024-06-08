@@ -84,6 +84,7 @@ export default function Header() {
           placement="bottom-end"
         >
           <MenuItem
+            onClick={() => navigator.clipboard.writeText(userData?.defaultAccount.id)}
             sx={{
               display: "flex",
               flexDirection: "column",
@@ -91,7 +92,6 @@ export default function Header() {
             }}
           >
             <Box
-              onClick={() => navigator.clipboard.writeText(userData?.defaultAccount.id)}
               sx={{
                 width: "100%",
                 display: "flex",
@@ -128,17 +128,7 @@ export default function Header() {
             Logout
             <LogoutOutlinedIcon></LogoutOutlinedIcon>
           </MenuItem>
-
-          <MenuItem
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontWeight: "500",
-            }}
-          >
-            Dark Mode
-            <ColorSchemeToggle></ColorSchemeToggle>
-          </MenuItem>
+          <ColorSchemeToggle></ColorSchemeToggle>
         </Menu>
       </Dropdown>
     </Sheet>
