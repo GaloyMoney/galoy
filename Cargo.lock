@@ -3881,7 +3881,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum-extra",
- "http 0.2.12",
+ "http 1.1.0",
  "opentelemetry",
  "opentelemetry-http",
  "opentelemetry-otlp",

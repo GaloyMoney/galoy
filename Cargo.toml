@@ -40,7 +40,7 @@ opentelemetry-otlp = { version = "0.13.0", features = ["http-proto", "reqwest-cl
 opentelemetry = { version = "0.20.0", features = ["trace", "rt-tokio"]}
 opentelemetry-semantic-conventions = "0.12.0"
 opentelemetry-http = "0.9.0"
-http = "0.2.12"
+http = "1.1.0"
 tonic = "0.10.2"
 tonic-build = { version = "0.10.2", features = ["prost"] }
 tonic-health = "0.10.2"

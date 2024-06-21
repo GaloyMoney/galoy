@@ -3464,7 +3464,7 @@ dependencies = [
  "futures",
  "google-fcm1",
  "handlebars",
- "http 0.2.12",
+ "http 1.1.0",
  "jsonwebtoken",
  "lettre",
  "opentelemetry",

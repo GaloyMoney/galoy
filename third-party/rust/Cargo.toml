@@ -48,7 +48,7 @@ opentelemetry-otlp = { version = "0.13.0", features = ["http-proto", "reqwest-cl
 opentelemetry = { version = "0.20.0", features = ["trace", "rt-tokio"]}
 opentelemetry-semantic-conventions = "0.12.0"
 opentelemetry-http = "0.9.0"
-http = "0.2.12"
+http = "1.1.0"
 rust-i18n = "3"
 google-fcm1 = "5.0.4"
 lettre = { version = "0.11.7", default-features = false, features = ["builder", "tokio1", "tokio1-rustls-tls", "smtp-transport"] }
