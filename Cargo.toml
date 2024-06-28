@@ -46,7 +46,7 @@ tonic-build = { version = "0.10.2", features = ["prost"] }
 tonic-health = "0.10.2"
 prost = "0.12"
 rust-i18n = "3"
-google-fcm1 = "5.0.4"
+google-fcm1 = "5.0.5"
 sqlxmq = { version = "0.5", default-features = false, features = ["runtime-tokio-rustls"] }
 lettre = { version = "0.11.7", default-features = false, features = ["builder", "tokio1", "tokio1-rustls-tls", "smtp-transport"] }
 handlebars = "5.1.2"
