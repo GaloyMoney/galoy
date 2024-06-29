@@ -140,6 +140,10 @@ const WalletSchema = new Schema<WalletRecord>({
     required: true,
     default: WalletCurrency.Btc,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
   onchain: {
     type: [
       {
