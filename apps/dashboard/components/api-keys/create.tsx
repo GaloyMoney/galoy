@@ -218,6 +218,13 @@ const ApiKeyCreate = ({ usdWalletId, btcWalletId }: Prop) => {
                   >
                     <Typography>Expires In</Typography>
                     <Select
+                      slotProps={{
+                        listbox: {
+                          sx: {
+                            width: "100%",
+                          },
+                        },
+                      }}
                       data-testid="create-api-expire-select"
                       name="apiKeyExpiresInDaysSelect"
                       id="apiKeyExpiresInDaysSelect"

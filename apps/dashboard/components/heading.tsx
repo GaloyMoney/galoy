@@ -1,6 +1,9 @@
 "use client"
 import React from "react"
-import { Box, Typography } from "@mui/joy"
+
+import { Box } from "@mui/joy"
+import { Typography, useMediaQuery, useTheme } from "@mui/material"
+
 import { usePathname } from "next/navigation"
 
 import { URLS } from "@/app/url"
@@ -21,6 +24,8 @@ export function getTitle(path: string): {
 const Heading = () => {
   const pathName = usePathname()
   const pageInfo = getTitle(pathName)
+  const theme = useTheme()
+  const isMobileDevice = useMediaQuery(theme.breakpoints.down("sm"))
 
   return (
     <Box
@@ -33,14 +38,14 @@ const Heading = () => {
         justifyContent: "space-between",
       }}
     >
-      <Typography level="h2">{pageInfo.title}</Typography>
+      <Typography variant={isMobileDevice ? "h3" : "h2"}>{pageInfo.title}</Typography>
       <Typography
         sx={{
           color: "grey",
           fontSize: "1em",
           marginTop: "0.8em",
         }}
-        level="h4"
+        variant="h4"
       >
         {pageInfo.badge}
       </Typography>
