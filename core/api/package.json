@@ -186,7 +186,7 @@
     "tree-kill": "^1.2.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.15.2",
-    "typescript": "^5.4.5",
+    "typescript": "^5.5.2",
     "zen-observable-ts": "^1.1.0"
   },
   "private": true
